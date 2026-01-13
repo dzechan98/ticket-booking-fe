@@ -1,13 +1,27 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Header() {
-  const [isLoggedIn] = useState(false) // TODO: Replace with auth context
-  const [userName] = useState("Người dùng")
+  const { user, logout } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border">
@@ -24,39 +38,57 @@ export function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-foreground hover:text-primary transition">
+            <Link
+              href="/"
+              className="text-foreground hover:text-primary transition"
+            >
               Trang chủ
             </Link>
-            <Link href="/movies" className="text-foreground hover:text-primary transition">
+            <Link
+              href="/movies"
+              className="text-foreground hover:text-primary transition"
+            >
               Phim
             </Link>
-            <Link href="/schedule" className="text-foreground hover:text-primary transition">
+            <Link
+              href="/schedule"
+              className="text-foreground hover:text-primary transition"
+            >
               Lịch chiếu
             </Link>
-            <Link href="/bookings" className="text-foreground hover:text-primary transition">
+            <Link
+              href="/bookings"
+              className="text-foreground hover:text-primary transition"
+            >
               Lịch sử đặt vé
             </Link>
           </nav>
 
           {/* Auth Section */}
           <div className="flex items-center gap-4">
-            {isLoggedIn ? (
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     className="bg-card border-border text-foreground hover:bg-secondary hover:text-secondary-foreground"
                   >
-                    👤 {userName}
+                    {user.full_name || "Người dùng"}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-card border-border" align="end">
+                <DropdownMenuContent
+                  className="bg-card border-border"
+                  align="end"
+                >
                   <DropdownMenuItem className="text-foreground focus:bg-secondary focus:text-secondary-foreground cursor-pointer">
                     <Link href="/profile" className="w-full">
                       Thông tin cá nhân
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive focus:bg-destructive focus:text-destructive-foreground cursor-pointer">
+                  <DropdownMenuItem
+                    className="text-destructive focus:bg-destructive focus:text-destructive-foreground cursor-pointer"
+                    onClick={logout}
+                  >
                     Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -70,7 +102,10 @@ export function Header() {
                 >
                   <Link href="/login">Đăng nhập</Link>
                 </Button>
-                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button
+                  asChild
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
                   <Link href="/register">Đăng ký</Link>
                 </Button>
               </>
@@ -79,5 +114,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

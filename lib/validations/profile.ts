@@ -1,10 +1,10 @@
-import { z } from "zod"
+import { z } from "zod";
 
 export const updateProfileSchema = z.object({
-  fullName: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
+  full_name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
   email: z.string().email("Email không hợp lệ"),
   phone: z.string().regex(/^\d{10}$/, "Số điện thoại phải có 10 chữ số"),
-})
+});
 
 export const changePasswordSchema = z
   .object({
@@ -15,7 +15,7 @@ export const changePasswordSchema = z
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
-  })
+  });
 
-export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
-export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

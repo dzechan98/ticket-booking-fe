@@ -1,7 +1,10 @@
+"use client";
+
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MovieSlider } from "@/components/movies/movie-slider";
 import { MovieCard } from "@/components/movies/movie-card";
+import { useAuth } from "@/hooks/use-auth";
 
 const currentMovies = [
   {
@@ -61,6 +64,8 @@ const currentMovies = [
 ];
 
 export default function HomePage() {
+  const { user } = useAuth();
+  console.log(user);
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />

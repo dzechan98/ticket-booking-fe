@@ -4,7 +4,7 @@ import { LoginResponse } from "@/api/auth/login";
 import { ApiResponse } from "@/types/common";
 
 export interface RegisterInput {
-  fullName: string;
+  full_name: string;
   email: string;
   password: string;
 }

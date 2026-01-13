@@ -1,57 +1,85 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { registerSchema, type RegisterInput } from "@/lib/validations/auth"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
+import { useRegister } from "@/api/auth/register";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
+import { toast } from "sonner";
 
 export function RegisterForm() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { mutateAsync: registerMutation } = useRegister();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-  })
+  });
 
   const onSubmit = async (data: RegisterInput) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      // TODO: Implement register API call
-      console.log("Register:", data)
-    } catch (error) {
-      console.error("Register failed:", error)
+      await registerMutation({
+        full_name: data.full_name,
+        email: data.email,
+        password: data.password,
+      });
+
+      toast.success("Đăng ký thành công");
+      router.push("/");
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || "Đăng ký thất bại";
+
+      toast.error(errorMessage);
+      console.error("Register error:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-md bg-card border-border">
       <CardHeader className="space-y-2">
         <CardTitle className="text-2xl font-bold">Tạo Tài Khoản</CardTitle>
-        <CardDescription className="text-muted-foreground">Đăng ký để bắt đầu đặt vé xem phim</CardDescription>
+        <CardDescription className="text-muted-foreground">
+          Đăng ký để bắt đầu đặt vé xem phim
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-foreground">
+            <Label htmlFor="full_name" className="text-foreground">
               Họ và tên
             </Label>
             <Input
-              id="fullName"
+              id="full_name"
               type="text"
               placeholder="Nguyễn Văn A"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
-              {...register("fullName")}
+              {...register("full_name")}
+              disabled={isLoading}
             />
-            {errors.fullName && <p className="text-sm text-destructive">{errors.fullName.message}</p>}
+            {errors.full_name && (
+              <p className="text-sm text-destructive">
+                {errors.full_name.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -64,8 +92,11 @@ export function RegisterForm() {
               placeholder="you@example.com"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
               {...register("email")}
+              disabled={isLoading}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -78,8 +109,13 @@ export function RegisterForm() {
               placeholder="••••••••"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
               {...register("password")}
+              disabled={isLoading}
             />
-            {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-sm text-destructive">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -92,8 +128,13 @@ export function RegisterForm() {
               placeholder="••••••••"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
               {...register("confirmPassword")}
+              disabled={isLoading}
             />
-            {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>}
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
 
           <Button
@@ -108,12 +149,15 @@ export function RegisterForm() {
         <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>
             Đã có tài khoản?{" "}
-            <Link href="/login" className="font-semibold text-primary hover:underline">
+            <Link
+              href="/login"
+              className="font-semibold text-primary hover:underline"
+            >
               Đăng nhập ngay
             </Link>
           </p>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

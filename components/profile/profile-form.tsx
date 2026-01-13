@@ -1,16 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { updateProfileSchema, type UpdateProfileInput } from "@/lib/validations/profile"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  updateProfileSchema,
+  type UpdateProfileInput,
+} from "@/lib/validations/profile";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function ProfileForm() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -18,24 +21,24 @@ export function ProfileForm() {
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      fullName: "Nguyễn Văn A",
+      full_name: "Nguyễn Văn A",
       email: "user@example.com",
       phone: "0123456789",
     },
-  })
+  });
 
   const onSubmit = async (data: UpdateProfileInput) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // TODO: Implement update profile API call
-      console.log("Update profile:", data)
-      alert("Cập nhật thông tin thành công!")
+      console.log("Update profile:", data);
+      alert("Cập nhật thông tin thành công!");
     } catch (error) {
-      console.error("Update failed:", error)
+      console.error("Update failed:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -45,17 +48,21 @@ export function ProfileForm() {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-foreground">
+            <Label htmlFor="full_name" className="text-foreground">
               Họ và tên
             </Label>
             <Input
-              id="fullName"
+              id="full_name"
               type="text"
               placeholder="Nguyễn Văn A"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
-              {...register("fullName")}
+              {...register("full_name")}
             />
-            {errors.fullName && <p className="text-sm text-destructive">{errors.fullName.message}</p>}
+            {errors.full_name && (
+              <p className="text-sm text-destructive">
+                {errors.full_name.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -69,7 +76,9 @@ export function ProfileForm() {
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
               {...register("email")}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -83,7 +92,9 @@ export function ProfileForm() {
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
               {...register("phone")}
             />
-            {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
+            {errors.phone && (
+              <p className="text-sm text-destructive">{errors.phone.message}</p>
+            )}
           </div>
 
           <Button
@@ -96,5 +107,5 @@ export function ProfileForm() {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

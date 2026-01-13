@@ -11,7 +11,7 @@ export interface LoginInput {
 }
 
 export interface LoginResponse {
-  accessToken: string;
+  access_token: string;
 }
 
 const URL = "/auth/login";
@@ -28,7 +28,7 @@ export const useLogin = () => {
       );
 
       const { data } = response.data;
-      localStorage.setItem("accessToken", data?.accessToken);
+      localStorage.setItem("accessToken", data?.access_token);
 
       return response.data;
     },
