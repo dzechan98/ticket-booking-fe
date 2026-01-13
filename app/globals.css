@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -125,19 +124,13 @@
 }
 
 @layer components {
-  .cinema-card {
-    @apply bg-card text-card-foreground rounded-lg border border-border overflow-hidden transition-transform hover:scale-105;
-  }
-
-  .cinema-button {
-    @apply px-4 py-2 rounded-lg font-semibold transition-colors;
-  }
-
   .cinema-button-primary {
-    @apply cinema-button bg-primary text-primary-foreground hover:bg-primary/90;
+    @apply px-4 py-2 rounded-lg font-semibold transition-colors
+           bg-primary text-primary-foreground hover:bg-primary/90;
   }
 
   .cinema-button-secondary {
-    @apply cinema-button bg-secondary text-secondary-foreground hover:bg-secondary/90;
+    @apply px-4 py-2 rounded-lg font-semibold transition-colors
+           bg-secondary text-secondary-foreground hover:bg-secondary/90;
   }
 }
