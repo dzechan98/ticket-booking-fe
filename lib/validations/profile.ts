@@ -1,9 +1,12 @@
+import { Gender } from "@/api/users/type";
 import { z } from "zod";
 
 export const updateProfileSchema = z.object({
-  full_name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
+  full_name: z.string().min(1, "Họ tên không được để trống"),
   email: z.string().email("Email không hợp lệ"),
-  phone: z.string().regex(/^\d{10}$/, "Số điện thoại phải có 10 chữ số"),
+  gender: z.nativeEnum(Gender),
+  dob: z.string().min(1, "Vui lòng chọn ngày sinh"),
+  avatar: z.string().min(1, "Vui lòng chọn ảnh đại diện"),
 });
 
 export const changePasswordSchema = z

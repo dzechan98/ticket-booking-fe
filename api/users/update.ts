@@ -4,6 +4,7 @@ import { USER_KEYS } from "./key";
 import type { UserResponse } from "./type";
 import type { ApiResponse } from "@/types/common";
 import { useStoreContext } from "@/contexts/store";
+import { useAuth } from "@/hooks/use-auth";
 
 export interface UpdateProfileInput {
   email?: string;
@@ -18,13 +19,14 @@ const URL = "/users";
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const setUser = useStoreContext((state) => state.auth.setUser);
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (input: UpdateProfileInput) => {
       try {
         const response = await instance.put<ApiResponse<UserResponse>>(
-          URL,
-          input
+          `${URL}/${user?.id}`,
+          input,
         );
         return response.data.data;
       } catch (error: any) {
