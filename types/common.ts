@@ -7,9 +7,10 @@ export interface ApiResponse<T> {
 
 export interface PaginatedResponse<T> {
   items: T[];
-  totalItems: number;
+  page: number;
+  limit: number;
+  total: number;
   totalPages: number;
-  currentPage: number;
 }
 
 export interface BaseResponse {

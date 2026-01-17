@@ -1,28 +1,36 @@
 "use client";
 
+import {
+  BarChart3,
+  Box,
+  Clock,
+  Film,
+  LogOut,
+  Ticket,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Film, Users, Ticket, Clock, LogOut } from "lucide-react";
 
-import { useAuth } from "@/hooks/use-auth";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/use-auth";
 
 const adminMenuItems = [
   { label: "Dashboard", href: "/admin", icon: BarChart3 },
   { label: "Quản lý phim", href: "/admin/movies", icon: Film },
   { label: "Quản lý người dùng", href: "/admin/users", icon: Users },
   { label: "Quản lý vé", href: "/admin/tickets", icon: Ticket },
+  { label: "Quản lý phòng chiếu", href: "/admin/rooms", icon: Box },
   { label: "Quản lý suất chiếu", href: "/admin/showtimes", icon: Clock },
 ];
 

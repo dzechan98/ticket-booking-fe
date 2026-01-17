@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createRoomSchema,
@@ -13,6 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface RoomFormProps {
   onSubmit: (data: CreateRoomInput) => Promise<void>;
@@ -30,6 +37,7 @@ export function RoomForm({
     register,
     handleSubmit,
     formState: { errors },
+    control,
     reset,
   } = useForm<CreateRoomInput>({
     resolver: zodResolver(createRoomSchema),
@@ -47,7 +55,7 @@ export function RoomForm({
       toast.success(
         initialData
           ? "Cập nhật phòng chiếu thành công!"
-          : "Tạo phòng chiếu thành công!"
+          : "Tạo phòng chiếu thành công!",
       );
       reset();
     } catch (error: any) {
@@ -55,7 +63,7 @@ export function RoomForm({
         error?.response?.data?.message ||
           (initialData
             ? "Không thể cập nhật phòng chiếu"
-            : "Không thể tạo phòng chiếu")
+            : "Không thể tạo phòng chiếu"),
       );
     } finally {
       setIsSubmitting(false);
@@ -72,7 +80,7 @@ export function RoomForm({
           id="name"
           type="text"
           placeholder="Phòng 1, Phòng VIP..."
-          className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+          className=" border-border text-foreground placeholder:text-muted-foreground"
           {...register("name")}
         />
         {errors.name && (
@@ -84,17 +92,25 @@ export function RoomForm({
         <Label htmlFor="screen_type" className="text-foreground">
           Loại màn hình <span className="text-destructive">*</span>
         </Label>
-        <select
-          id="screen_type"
-          className="w-full px-3 py-2 bg-input border border-border text-foreground rounded-md"
-          {...register("screen_type")}
-        >
-          {Object.entries(screenTypeLabels).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <Controller
+          name="screen_type"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className="w-full border-border text-foreground">
+                <SelectValue placeholder="Chọn loại màn hình" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {Object.entries(screenTypeLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
         {errors.screen_type && (
           <p className="text-sm text-destructive">
             {errors.screen_type.message}
@@ -110,7 +126,7 @@ export function RoomForm({
           id="total_seats"
           type="number"
           placeholder="100"
-          className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+          className="border-border text-foreground placeholder:text-muted-foreground"
           {...register("total_seats", { valueAsNumber: true })}
         />
         {errors.total_seats && (
@@ -128,8 +144,8 @@ export function RoomForm({
         {isSubmitting || isLoading
           ? "Đang xử lý..."
           : initialData
-          ? "Cập nhật"
-          : "Tạo phòng"}
+            ? "Cập nhật"
+            : "Tạo phòng"}
       </Button>
     </form>
   );

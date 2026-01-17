@@ -71,7 +71,7 @@ export function RegisterForm() {
               id="full_name"
               type="text"
               placeholder="Nguyễn Văn A"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("full_name")}
               disabled={isLoading}
             />
@@ -90,7 +90,7 @@ export function RegisterForm() {
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("email")}
               disabled={isLoading}
             />
@@ -107,7 +107,7 @@ export function RegisterForm() {
               id="password"
               type="password"
               placeholder="••••••••"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("password")}
               disabled={isLoading}
             />
@@ -126,7 +126,7 @@ export function RegisterForm() {
               id="confirmPassword"
               type="password"
               placeholder="••••••••"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("confirmPassword")}
               disabled={isLoading}
             />

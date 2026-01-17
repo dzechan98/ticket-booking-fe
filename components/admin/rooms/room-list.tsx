@@ -1,61 +1,89 @@
 "use client";
 
-import { useState } from "react";
+import type { RoomResponse } from "@/api/rooms/type";
+import { BasePagination } from "@/components/common/base-pagination";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { screenTypeLabels } from "@/lib/validations/room";
-import { Edit2, Trash2, Loader2 } from "lucide-react";
-import type { RoomResponse } from "@/api/rooms/type";
-import type { CreateRoomInput } from "@/lib/validations/room";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { CreateRoomInput } from "@/lib/validations/room";
+import { ScreenType } from "@/lib/validations/room";
+import { Edit2, Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { RoomForm } from "./room-form";
 
 interface RoomsListProps {
   rooms: RoomResponse[];
   isLoading: boolean;
+  page: number;
+  totalPages: number;
+  isCreateOpen: boolean;
+  onPageChange: (page: number) => void;
   onDelete: (id: string) => Promise<void>;
   onCreate: (data: CreateRoomInput) => Promise<void>;
   onUpdate: (id: string, data: CreateRoomInput) => Promise<void>;
-  isCreateOpen: boolean;
   onCreateOpenChange: (open: boolean) => void;
 }
 
+export const screenTypeConfig: Record<
+  ScreenType,
+  {
+    label: string;
+    variant: "default" | "secondary" | "outline" | "destructive";
+  }
+> = {
+  [ScreenType.STANDARD]: {
+    label: "Standard",
+    variant: "secondary",
+  },
+  [ScreenType.IMAX]: {
+    label: "IMAX",
+    variant: "default",
+  },
+  [ScreenType.SCREEN_X]: {
+    label: "ScreenX",
+    variant: "outline",
+  },
+  [ScreenType.GOLD_CLASS]: {
+    label: "Gold Class",
+    variant: "destructive",
+  },
+};
+
 export function RoomsList({
+  page,
+  totalPages,
   rooms,
   isLoading,
+  isCreateOpen,
   onDelete,
   onCreate,
   onUpdate,
-  isCreateOpen,
+  onPageChange,
   onCreateOpenChange,
 }: RoomsListProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponse | null>(null);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [deleteRoomId, setDeleteRoomId] = useState<string | null>(null);
 
   const handleEdit = (room: RoomResponse) => {
     setSelectedRoom(room);
     setIsEditOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa phòng này?")) return;
-
-    setIsDeleting(id);
-    try {
-      await onDelete(id);
-    } catch (error) {
-      console.error("Delete error:", error);
-    } finally {
-      setIsDeleting(null);
-    }
   };
 
   const handleCreateSubmit = async (data: CreateRoomInput) => {
@@ -63,8 +91,6 @@ export function RoomsList({
     try {
       await onCreate(data);
       onCreateOpenChange(false);
-    } catch (error) {
-      console.error("Create error:", error);
     } finally {
       setIsCreating(false);
     }
@@ -78,132 +104,150 @@ export function RoomsList({
       await onUpdate(selectedRoom.id, data);
       setIsEditOpen(false);
       setSelectedRoom(null);
-    } catch (error) {
-      console.error("Update error:", error);
     } finally {
       setIsUpdating(false);
     }
-  };
-
-  const handleCreateOpenChange = (open: boolean) => {
-    onCreateOpenChange(open);
   };
 
   return (
     <>
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground">
-            Danh sách phòng chiếu
-          </CardTitle>
+          <CardTitle>Danh sách phòng chiếu</CardTitle>
         </CardHeader>
+
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="animate-spin text-primary" size={32} />
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : rooms.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="py-10 text-center text-muted-foreground">
               Chưa có phòng chiếu nào
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b border-border">
-                  <tr>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">
-                      Tên phòng
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">
-                      Loại màn hình
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">
-                      Tổng số ghế
-                    </th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">
-                      Hành động
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+            <div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tên phòng</TableHead>
+                    <TableHead>Loại màn hình</TableHead>
+                    <TableHead>Tổng số ghế</TableHead>
+                    <TableHead className="text-right">Hành động</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
                   {rooms.map((room) => (
-                    <tr
+                    <TableRow
                       key={room.id}
-                      className="border-b border-border hover:bg-secondary transition"
+                      className="hover:bg-muted/50 transition"
                     >
-                      <td className="py-3 px-4 font-semibold text-foreground">
-                        {room.name}
-                      </td>
-                      <td className="py-3 px-4 text-muted-foreground">
-                        {screenTypeLabels[room.screen_type]}
-                      </td>
-                      <td className="py-3 px-4 text-muted-foreground">
+                      <TableCell className="font-medium">{room.name}</TableCell>
+
+                      <TableCell>
+                        <Badge
+                          variant={screenTypeConfig[room.screen_type].variant}
+                        >
+                          {screenTypeConfig[room.screen_type].label}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="text-muted-foreground">
                         {room.total_seats} ghế
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex gap-2">
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(room)}
-                            className="border-border text-foreground hover:bg-secondary bg-transparent"
                           >
-                            <Edit2 size={16} className="mr-1" />
+                            <Edit2 className="mr-1 h-4 w-4" />
                             Sửa
                           </Button>
+
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDelete(room.id)}
-                            disabled={isDeleting === room.id}
-                            className="border-destructive text-destructive hover:bg-destructive/10 bg-transparent"
+                            className="border-destructive text-destructive"
+                            onClick={() => setDeleteRoomId(room.id)}
                           >
-                            {isDeleting === room.id ? (
-                              <Loader2 size={16} className="animate-spin" />
-                            ) : (
-                              <Trash2 size={16} />
-                            )}
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
+              <BasePagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={onPageChange}
+              />
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Dialog open={isCreateOpen} onOpenChange={handleCreateOpenChange}>
-        <DialogContent className="bg-card border-border">
+      {/* Create dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={onCreateOpenChange}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-foreground">
-              Tạo phòng chiếu mới
-            </DialogTitle>
+            <DialogTitle>Tạo phòng chiếu mới</DialogTitle>
           </DialogHeader>
           <RoomForm onSubmit={handleCreateSubmit} isLoading={isCreating} />
         </DialogContent>
       </Dialog>
 
+      {/* Update dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-foreground">
-              Cập nhật phòng chiếu
-            </DialogTitle>
+            <DialogTitle>Cập nhật phòng chiếu</DialogTitle>
           </DialogHeader>
+
           {selectedRoom && (
             <RoomForm
-              onSubmit={handleUpdateSubmit}
               initialData={{
                 name: selectedRoom.name,
                 screen_type: selectedRoom.screen_type,
                 total_seats: selectedRoom.total_seats,
               }}
+              onSubmit={handleUpdateSubmit}
               isLoading={isUpdating}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteRoomId} onOpenChange={() => setDeleteRoomId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xoá phòng</DialogTitle>
+          </DialogHeader>
+
+          <p className="text-sm text-muted-foreground">
+            Bạn có chắc chắn muốn xoá phòng chiếu này không?
+          </p>
+
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteRoomId(null)}>
+              Huỷ
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (!deleteRoomId) return;
+                await onDelete(deleteRoomId);
+                setDeleteRoomId(null);
+              }}
+            >
+              Xoá
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

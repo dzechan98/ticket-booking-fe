@@ -75,7 +75,7 @@ export function LoginForm() {
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("email")}
               disabled={isLoading}
             />
@@ -92,7 +92,7 @@ export function LoginForm() {
               id="password"
               type="password"
               placeholder="••••••••"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("password")}
               disabled={isLoading}
             />

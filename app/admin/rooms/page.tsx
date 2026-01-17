@@ -12,7 +12,10 @@ import { toast } from "sonner";
 
 export default function AdminRoomsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const { data: rooms = [], isLoading } = useListRooms();
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading } = useListRooms(page, 8);
+
   const { mutateAsync: createRoom } = useCreateRoom();
   const { mutateAsync: updateRoom } = useUpdateRoom();
   const { mutateAsync: deleteRoom } = useDeleteRoom();
@@ -73,7 +76,10 @@ export default function AdminRoomsPage() {
 
       {/* Rooms List */}
       <RoomsList
-        rooms={rooms}
+        rooms={data?.items ?? []}
+        page={data?.page ?? 1}
+        totalPages={data?.totalPages ?? 1}
+        onPageChange={setPage}
         isLoading={isLoading}
         onCreate={handleCreate}
         onUpdate={handleUpdate}

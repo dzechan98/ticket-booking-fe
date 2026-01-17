@@ -1,16 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { changePasswordSchema, type ChangePasswordInput } from "@/lib/validations/profile"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  changePasswordSchema,
+  type ChangePasswordInput,
+} from "@/lib/validations/profile";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function ChangePasswordForm() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -18,21 +21,21 @@ export function ChangePasswordForm() {
     reset,
   } = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
-  })
+  });
 
   const onSubmit = async (data: ChangePasswordInput) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // TODO: Implement change password API call
-      console.log("Change password:", data)
-      alert("Đổi mật khẩu thành công!")
-      reset()
+      console.log("Change password:", data);
+      alert("Đổi mật khẩu thành công!");
+      reset();
     } catch (error) {
-      console.error("Change password failed:", error)
+      console.error("Change password failed:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -49,10 +52,14 @@ export function ChangePasswordForm() {
               id="currentPassword"
               type="password"
               placeholder="••••••••"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("currentPassword")}
             />
-            {errors.currentPassword && <p className="text-sm text-destructive">{errors.currentPassword.message}</p>}
+            {errors.currentPassword && (
+              <p className="text-sm text-destructive">
+                {errors.currentPassword.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -63,10 +70,14 @@ export function ChangePasswordForm() {
               id="newPassword"
               type="password"
               placeholder="••••••••"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("newPassword")}
             />
-            {errors.newPassword && <p className="text-sm text-destructive">{errors.newPassword.message}</p>}
+            {errors.newPassword && (
+              <p className="text-sm text-destructive">
+                {errors.newPassword.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -77,10 +88,14 @@ export function ChangePasswordForm() {
               id="confirmPassword"
               type="password"
               placeholder="••••••••"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("confirmPassword")}
             />
-            {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>}
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
 
           <Button
@@ -93,5 +108,5 @@ export function ChangePasswordForm() {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

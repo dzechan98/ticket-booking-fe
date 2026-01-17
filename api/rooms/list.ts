@@ -6,20 +6,19 @@ import type { ApiResponse, PaginatedResponse } from "@/types/common";
 
 const URL = "/rooms";
 
-export const useListRooms = () => {
+export const useListRooms = (page = 1, limit = 10) => {
   return useQuery({
-    queryKey: [ROOMS_KEYS.list()],
+    queryKey: [ROOMS_KEYS.list(), page, limit],
     queryFn: async () => {
-      try {
-        const response = await instance.get<
-          ApiResponse<PaginatedResponse<RoomResponse> | RoomResponse[]>
-        >(URL);
-        const data = response.data.data;
-        return Array.isArray(data) ? data : data.items;
-      } catch (error: any) {
-        return Promise.reject(error?.response?.data);
-      }
+      const response = await instance.get<
+        ApiResponse<PaginatedResponse<RoomResponse>>
+      >(URL, {
+        params: { page, limit },
+      });
+
+      return response.data.data;
     },
+
     retry: 1,
   });
 };

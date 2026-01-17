@@ -55,7 +55,7 @@ export function ProfileForm() {
               id="full_name"
               type="text"
               placeholder="Nguyễn Văn A"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("full_name")}
             />
             {errors.full_name && (
@@ -73,7 +73,7 @@ export function ProfileForm() {
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("email")}
             />
             {errors.email && (
@@ -89,7 +89,7 @@ export function ProfileForm() {
               id="phone"
               type="tel"
               placeholder="0123456789"
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("phone")}
             />
             {errors.phone && (
