@@ -50,15 +50,16 @@ export function ProfileForm() {
     handleSubmit,
     control,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       full_name: "",
       email: "",
-      gender: undefined,
       dob: undefined,
       avatar: "",
+      gender: Gender.OTHER,
     },
   });
 
@@ -98,14 +99,16 @@ export function ProfileForm() {
 
   useEffect(() => {
     if (user) {
-      setValue("full_name", user.full_name || "");
-      setValue("email", user.email || "");
-      setValue("gender", user.gender || Gender.OTHER);
-      setValue("dob", user.dob || "");
-      setValue("avatar", user.avatar || "");
+      reset({
+        full_name: user.full_name ?? "",
+        email: user.email ?? "",
+        gender: user.gender as Gender,
+        dob: user.dob ?? undefined,
+        avatar: user.avatar ?? "",
+      });
       setPreview(user.avatar || null);
     }
-  }, [user, setValue]);
+  }, [user, reset]);
 
   return (
     <Card className="w-full">
@@ -159,7 +162,11 @@ export function ProfileForm() {
               name="gender"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  key={field.value}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Chọn giới tính" />
                   </SelectTrigger>
@@ -211,9 +218,7 @@ export function ProfileForm() {
                           selected={dateValue}
                           onSelect={(date) =>
                             field.onChange(
-                              date
-                                ? date.toISOString().split("T")[0]
-                                : undefined,
+                              date ? format(date, "yyyy-MM-dd") : undefined,
                             )
                           }
                           disabled={(date) =>

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { toast } from "sonner";
+import { getError } from "@/lib/utils";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +38,7 @@ export function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
-      const response = await loginMutation(data);
+      await loginMutation(data);
 
       const userResult = await refetchUser();
 
@@ -47,11 +48,8 @@ export function LoginForm() {
       } else {
         router.push("/");
       }
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || "Đăng nhập thất bại";
-      toast.error(errorMessage);
-      console.error("Login error:", error);
+    } catch (error) {
+      toast.error(getError(error));
     } finally {
       setIsLoading(false);
     }

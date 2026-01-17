@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { toast } from "sonner";
+import { getError } from "@/lib/utils";
 
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,11 +44,8 @@ export function RegisterForm() {
 
       toast.success("Đăng ký thành công");
       router.push("/");
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || "Đăng ký thất bại";
-
-      toast.error(errorMessage);
-      console.error("Register error:", error);
+    } catch (error) {
+      toast.error(getError(error));
     } finally {
       setIsLoading(false);
     }
