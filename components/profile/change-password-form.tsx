@@ -1,58 +1,56 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  changePasswordSchema,
-  type ChangePasswordInput,
-} from "@/lib/validations/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { useChangePassword } from "@/api/auth/change-password";
+import {
+  ChangePasswordInput,
+  changePasswordSchema,
+} from "@/lib/validations/profile";
 
 export function ChangePasswordForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<ChangePasswordInput>({
+  const form = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
   });
 
+  const { register, handleSubmit, reset, formState } = form;
+  const { errors, isSubmitting } = formState;
+
+  const changePasswordMutation = useChangePassword();
+
   const onSubmit = async (data: ChangePasswordInput) => {
-    setIsLoading(true);
     try {
-      // TODO: Implement change password API call
-      console.log("Change password:", data);
-      alert("Đổi mật khẩu thành công!");
+      await changePasswordMutation.mutateAsync({
+        old_password: data.currentPassword,
+        new_password: data.newPassword,
+      });
+
+      toast.success("Đổi mật khẩu thành công 🎉");
       reset();
-    } catch (error) {
-      console.error("Change password failed:", error);
-    } finally {
-      setIsLoading(false);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Đổi mật khẩu thất bại");
     }
   };
 
   return (
-    <Card className="bg-card border-border">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-foreground">Đổi mật khẩu</CardTitle>
+        <CardTitle>Đổi mật khẩu</CardTitle>
       </CardHeader>
+
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Current password */}
           <div className="space-y-2">
-            <Label htmlFor="currentPassword" className="text-foreground">
-              Mật khẩu hiện tại
-            </Label>
+            <Label>Mật khẩu hiện tại</Label>
             <Input
-              id="currentPassword"
               type="password"
               placeholder="••••••••"
-              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("currentPassword")}
             />
             {errors.currentPassword && (
@@ -62,15 +60,12 @@ export function ChangePasswordForm() {
             )}
           </div>
 
+          {/* New password */}
           <div className="space-y-2">
-            <Label htmlFor="newPassword" className="text-foreground">
-              Mật khẩu mới
-            </Label>
+            <Label>Mật khẩu mới</Label>
             <Input
-              id="newPassword"
               type="password"
               placeholder="••••••••"
-              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("newPassword")}
             />
             {errors.newPassword && (
@@ -80,15 +75,12 @@ export function ChangePasswordForm() {
             )}
           </div>
 
+          {/* Confirm password */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-foreground">
-              Xác nhận mật khẩu mới
-            </Label>
+            <Label>Xác nhận mật khẩu mới</Label>
             <Input
-              id="confirmPassword"
               type="password"
               placeholder="••••••••"
-              className="border-border text-foreground placeholder:text-muted-foreground"
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
@@ -100,10 +92,12 @@ export function ChangePasswordForm() {
 
           <Button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+            className="w-full"
+            disabled={isSubmitting || changePasswordMutation.isPending}
           >
-            {isLoading ? "Đang xử lý..." : "Đổi mật khẩu"}
+            {changePasswordMutation.isPending
+              ? "Đang xử lý..."
+              : "Đổi mật khẩu"}
           </Button>
         </form>
       </CardContent>

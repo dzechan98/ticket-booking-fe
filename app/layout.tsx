@@ -1,4 +1,3 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { ReactQueryClientProvider } from "@/providers/react-query-client-provider";
 import { StoreProvider } from "@/zustand/store";
@@ -13,7 +12,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Vz Cinema - Đặt Vé Xem Phim Online",
   description:
-    "Đặt vé xem phim trực tuyến dễ dàng tại Vz Cinema. Chọn phim, suất chiếu, ghế và thanh toán nhanh chóng.",
+    "Đặt vé xem phim trực tuyến dễ dàngO tại Vz Cinema. Chọn phim, suất chiếu, ghế và thanh toán nhanh chóng.",
   generator: "v0.app",
   icons: {
     icon: [
@@ -44,10 +43,8 @@ export default function RootLayout({
       <body className={`font-sans antialiased bg-background text-foreground`}>
         <ReactQueryClientProvider>
           <StoreProvider>
-            <SidebarProvider>
-              <Toaster />
-              {children}
-            </SidebarProvider>
+            <Toaster />
+            {children}
           </StoreProvider>
         </ReactQueryClientProvider>
       </body>

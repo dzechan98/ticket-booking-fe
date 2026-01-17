@@ -108,7 +108,7 @@ export function ProfileForm() {
   }, [user, setValue]);
 
   return (
-    <Card className="max-w-xl">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Thông tin cá nhân</CardTitle>
       </CardHeader>
