@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,18 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
 
 export function Header() {
   const { user, logout } = useAuth();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
+  const avatarFallback =
+    user?.full_name?.charAt(0).toUpperCase() ||
+    user?.email?.charAt(0).toUpperCase() ||
+    "U";
 
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border">
@@ -69,24 +64,29 @@ export function Header() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="bg-card border-border text-foreground hover:bg-secondary hover:text-secondary-foreground"
-                  >
-                    {user.full_name || "Người dùng"}
-                  </Button>
+                  <Avatar className="h-8 w-8 cursor-pointer">
+                    <AvatarImage
+                      src={user?.avatar || ""}
+                      alt={user.full_name || user.email}
+                    />
+                    <AvatarFallback className="bg-muted text-muted-foreground">
+                      {avatarFallback}
+                    </AvatarFallback>
+                  </Avatar>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent
-                  className="bg-card border-border"
                   align="end"
+                  className="bg-card border-border"
                 >
-                  <DropdownMenuItem className="text-foreground focus:bg-secondary focus:text-secondary-foreground cursor-pointer">
+                  <DropdownMenuItem asChild>
                     <Link href="/profile" className="w-full">
                       Thông tin cá nhân
                     </Link>
                   </DropdownMenuItem>
+
                   <DropdownMenuItem
-                    className="text-destructive focus:bg-destructive focus:text-destructive-foreground cursor-pointer"
+                    className="text-destructive focus:text-destructive-foreground cursor-pointer"
                     onClick={logout}
                   >
                     Đăng xuất

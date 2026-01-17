@@ -1,6 +1,5 @@
-import { AdminSidebar } from "@/components/admin/sidebar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const mockTickets = [
   {
@@ -27,61 +26,82 @@ const mockTickets = [
     status: "cancelled",
     price: 150000,
   },
-]
+];
 
 export default function AdminTicketsPage() {
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-background">
-      <AdminSidebar />
+    <div className="p-6 md:p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý vé</h1>
+        <p className="text-muted-foreground">
+          Theo dõi các vé đã bán và trạng thái thanh toán
+        </p>
+      </div>
 
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 md:p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý vé</h1>
-            <p className="text-muted-foreground">Theo dõi các vé đã bán và trạng thái thanh toán</p>
+      {/* Tickets Table */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground">Danh sách vé</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-border">
+                <tr>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
+                    Phim
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
+                    Suất chiếu
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
+                    Ghế
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
+                    Trạng thái
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">
+                    Giá
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {mockTickets.map((ticket) => (
+                  <tr
+                    key={ticket.id}
+                    className="border-b border-border hover:bg-secondary transition"
+                  >
+                    <td className="py-3 px-4 font-semibold text-foreground">
+                      {ticket.movieTitle}
+                    </td>
+                    <td className="py-3 px-4 text-muted-foreground">
+                      {ticket.showtime}
+                    </td>
+                    <td className="py-3 px-4 text-muted-foreground">
+                      {ticket.seats}
+                    </td>
+                    <td className="py-3 px-4">
+                      <Badge
+                        className={
+                          ticket.status === "paid"
+                            ? "bg-green-600 text-white"
+                            : "bg-red-600 text-white"
+                        }
+                      >
+                        {ticket.status === "paid" ? "Đã thanh toán" : "Đã hủy"}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-4 text-primary font-semibold">
+                      {ticket.price.toLocaleString()} đ
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Tickets Table */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-foreground">Danh sách vé</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="border-b border-border">
-                    <tr>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Phim</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Suất chiếu</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Ghế</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Trạng thái</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Giá</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mockTickets.map((ticket) => (
-                      <tr key={ticket.id} className="border-b border-border hover:bg-secondary transition">
-                        <td className="py-3 px-4 font-semibold text-foreground">{ticket.movieTitle}</td>
-                        <td className="py-3 px-4 text-muted-foreground">{ticket.showtime}</td>
-                        <td className="py-3 px-4 text-muted-foreground">{ticket.seats}</td>
-                        <td className="py-3 px-4">
-                          <Badge
-                            className={ticket.status === "paid" ? "bg-green-600 text-white" : "bg-red-600 text-white"}
-                          >
-                            {ticket.status === "paid" ? "Đã thanh toán" : "Đã hủy"}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-primary font-semibold">{ticket.price.toLocaleString()} đ</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }

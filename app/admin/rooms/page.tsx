@@ -1,14 +1,13 @@
 "use client";
 
-import { AdminSidebar } from "@/components/admin/sidebar";
-import { Button } from "@/components/ui/button";
-import { useListRooms } from "@/api/rooms/list";
 import { useCreateRoom } from "@/api/rooms/create";
-import { useUpdateRoom } from "@/api/rooms/update";
 import { useDeleteRoom } from "@/api/rooms/delete";
-import { useState } from "react";
-import { CreateRoomInput } from "@/lib/validations/room";
+import { useListRooms } from "@/api/rooms/list";
+import { useUpdateRoom } from "@/api/rooms/update";
 import { RoomsList } from "@/components/admin/rooms/room-list";
+import { Button } from "@/components/ui/button";
+import { CreateRoomInput } from "@/lib/validations/room";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function AdminRoomsPage() {
@@ -25,7 +24,7 @@ export default function AdminRoomsPage() {
       setIsCreateDialogOpen(false);
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || "Không thể tạo phòng chiếu"
+        error?.response?.data?.message || "Không thể tạo phòng chiếu",
       );
     }
   };
@@ -36,7 +35,7 @@ export default function AdminRoomsPage() {
       toast.success("Cập nhật phòng chiếu thành công!");
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || "Không thể cập nhật phòng chiếu"
+        error?.response?.data?.message || "Không thể cập nhật phòng chiếu",
       );
     }
   };
@@ -47,47 +46,41 @@ export default function AdminRoomsPage() {
       toast.success("Xóa phòng chiếu thành công!");
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || "Không thể xóa phòng chiếu"
+        error?.response?.data?.message || "Không thể xóa phòng chiếu",
       );
     }
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-background">
-      <AdminSidebar />
-
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 md:p-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                Quản lý phòng chiếu
-              </h1>
-              <p className="text-muted-foreground">
-                Quản lý các phòng chiếu tại rạp phim
-              </p>
-            </div>
-            <Button
-              onClick={() => setIsCreateDialogOpen(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              Thêm phòng mới
-            </Button>
-          </div>
-
-          {/* Rooms List */}
-          <RoomsList
-            rooms={rooms}
-            isLoading={isLoading}
-            onCreate={handleCreate}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            isCreateOpen={isCreateDialogOpen}
-            onCreateOpenChange={setIsCreateDialogOpen}
-          />
+    <div className="p-6 md:p-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Quản lý phòng chiếu
+          </h1>
+          <p className="text-muted-foreground">
+            Quản lý các phòng chiếu tại rạp phim
+          </p>
         </div>
-      </main>
+        <Button
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
+          Thêm phòng mới
+        </Button>
+      </div>
+
+      {/* Rooms List */}
+      <RoomsList
+        rooms={rooms}
+        isLoading={isLoading}
+        onCreate={handleCreate}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        isCreateOpen={isCreateDialogOpen}
+        onCreateOpenChange={setIsCreateDialogOpen}
+      />
     </div>
   );
 }

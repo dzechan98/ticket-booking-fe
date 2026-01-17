@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { MovieSlider } from "@/components/movies/movie-slider";
 import { MovieCard } from "@/components/movies/movie-card";
 import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
 
 const currentMovies = [
   {
@@ -65,7 +66,6 @@ const currentMovies = [
 
 export default function HomePage() {
   const { user } = useAuth();
-  console.log(user);
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -96,12 +96,12 @@ export default function HomePage() {
 
         {/* View All Movies */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
-          <a
+          <Link
             href="/movies"
             className="inline-block px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition"
           >
             Xem tất cả phim
-          </a>
+          </Link>
         </section>
       </main>
 

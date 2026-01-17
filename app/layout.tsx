@@ -1,10 +1,11 @@
-import type React from "react";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 import { ReactQueryClientProvider } from "@/providers/react-query-client-provider";
 import { StoreProvider } from "@/zustand/store";
-import { Toaster } from "@/components/ui/sonner";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import type React from "react";
+import "./globals.css";
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -43,8 +44,10 @@ export default function RootLayout({
       <body className={`font-sans antialiased bg-background text-foreground`}>
         <ReactQueryClientProvider>
           <StoreProvider>
-            <Toaster />
-            {children}
+            <SidebarProvider>
+              <Toaster />
+              {children}
+            </SidebarProvider>
           </StoreProvider>
         </ReactQueryClientProvider>
       </body>
