@@ -6,14 +6,28 @@ import type { ApiResponse, PaginatedResponse } from "@/types/common";
 
 const URL = "/rooms";
 
-export const useListRooms = (page = 1, limit = 10) => {
+interface ListRoomsParams {
+  page?: number;
+  limit?: number;
+  name?: string;
+  screen_type?: string;
+}
+
+export const useListRooms = (params: ListRoomsParams = {}) => {
+  const { page = 1, limit = 10, name, screen_type } = params;
+
   return useQuery({
-    queryKey: [ROOMS_KEYS.list(), page, limit],
+    queryKey: [ROOMS_KEYS.list(), page, limit, name, screen_type],
     queryFn: async () => {
       const response = await instance.get<
         ApiResponse<PaginatedResponse<RoomResponse>>
       >(URL, {
-        params: { page, limit },
+        params: {
+          page,
+          limit,
+          ...(name && { name }),
+          ...(screen_type && { screen_type }),
+        },
       });
 
       return response.data.data;

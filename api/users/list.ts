@@ -6,14 +6,28 @@ import { UserResponse } from "@/api/users/type";
 
 const URL = "/users";
 
-export const useListUsers = (page = 1, limit = 8) => {
+interface ListUsersParams {
+  page?: number;
+  limit?: number;
+  email?: string;
+  is_admin?: boolean;
+}
+
+export const useListUsers = (params: ListUsersParams = {}) => {
+  const { page = 1, limit = 8, email, is_admin } = params;
+
   return useQuery({
-    queryKey: USER_KEYS.list({ page, limit }),
+    queryKey: USER_KEYS.list({ page, limit, email, is_admin }),
     queryFn: async () => {
       const response = await instance.get<
         ApiResponse<PaginatedResponse<UserResponse>>
       >(URL, {
-        params: { page, limit },
+        params: {
+          page,
+          limit,
+          ...(email && { email }),
+          ...(is_admin !== undefined && { is_admin }),
+        },
       });
 
       return response.data.data;
