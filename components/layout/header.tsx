@@ -79,12 +79,18 @@ export function Header() {
                   align="end"
                   className="bg-card border-border"
                 >
+                  {user.is_admin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="w-full">
+                        Bảng điều khiển
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="w-full">
                       Thông tin cá nhân
                     </Link>
                   </DropdownMenuItem>
-
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive-foreground cursor-pointer"
                     onClick={logout}

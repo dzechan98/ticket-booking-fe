@@ -1,30 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import instance from "../instance";
-import type { UserResponse } from "./type";
 import type { ApiResponse } from "@/types/common";
 import { USER_KEYS } from "@/api/users/key";
 
-export interface UpdateProfileInput {
-  email?: string;
-  full_name?: string;
-  avatar?: string;
-  dob?: string;
-  gender?: string;
-}
-
 const URL = "/users";
 
-export const useUpdateProfile = (id: string) => {
+export const useDeleteUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: UpdateProfileInput) => {
+    mutationFn: async (id: string) => {
       try {
-        const response = await instance.put<ApiResponse<UserResponse>>(
-          `${URL}/${id}`,
-          input,
-        );
-        return response.data.data;
+        await instance.delete<ApiResponse<null>>(`${URL}/${id}`);
       } catch (error: any) {
         return Promise.reject(error?.response?.data);
       }
@@ -33,7 +20,7 @@ export const useUpdateProfile = (id: string) => {
       queryClient.invalidateQueries({ queryKey: USER_KEYS.users() });
     },
     onError: (error: any) => {
-      console.error("Failed to update profile:", error);
+      console.error("Failed to delete user:", error);
     },
   });
 };
