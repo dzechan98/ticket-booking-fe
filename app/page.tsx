@@ -4,68 +4,14 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MovieSlider } from "@/components/movies/movie-slider";
 import { MovieCard } from "@/components/movies/movie-card";
-import { useAuth } from "@/hooks/use-auth";
+import { useListMovies } from "@/api/movies/list";
+import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 
-const currentMovies = [
-  {
-    id: "1",
-    title: "Phim Hành động 1",
-    genre: "Hành động",
-    duration: 120,
-    posterUrl:
-      "https://cdn-images.vtv.vn/562122370168008704/2023/11/28/photo-1-17011453442011344132442.jpg",
-    hasValidShowtime: true,
-  },
-  {
-    id: "2",
-    title: "Phim Tình cảm 1",
-    genre: "Tình cảm",
-    duration: 110,
-    posterUrl:
-      "https://cdn-images.vtv.vn/562122370168008704/2023/11/28/photo-1-17011453442011344132442.jpg",
-    hasValidShowtime: true,
-  },
-  {
-    id: "3",
-    title: "Phim Kinh dị 1",
-    genre: "Kinh dị",
-    duration: 100,
-    posterUrl:
-      "https://cdn-images.vtv.vn/562122370168008704/2023/11/28/photo-1-17011453442011344132442.jpg",
-    hasValidShowtime: false,
-  },
-  {
-    id: "4",
-    title: "Phim Hài hước 1",
-    genre: "Hài hước",
-    duration: 95,
-    posterUrl:
-      "https://cdn-images.vtv.vn/562122370168008704/2023/11/28/photo-1-17011453442011344132442.jpg",
-    hasValidShowtime: true,
-  },
-  {
-    id: "5",
-    title: "Phim Phiêu lưu 1",
-    genre: "Phiêu lưu",
-    duration: 130,
-    posterUrl:
-      "https://cdn-images.vtv.vn/562122370168008704/2023/11/28/photo-1-17011453442011344132442.jpg",
-    hasValidShowtime: true,
-  },
-  {
-    id: "6",
-    title: "Phim Khoa học viễn tưởng 1",
-    genre: "Khoa học viễn tưởng",
-    duration: 140,
-    posterUrl:
-      "https://cdn-images.vtv.vn/562122370168008704/2023/11/28/photo-1-17011453442011344132442.jpg",
-    hasValidShowtime: true,
-  },
-];
-
 export default function HomePage() {
-  const { user } = useAuth();
+  const { data, isLoading } = useListMovies({ page: 1, limit: 6 });
+  const movies = data?.items ?? [];
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -87,11 +33,31 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentMovies.map((movie) => (
-              <MovieCard key={movie.id} {...movie} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-20">
+              <Spinner className="h-10 w-10" />
+            </div>
+          ) : movies.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground text-lg">
+                Hiện tại chưa có phim nào
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {movies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  genres={movie.genres}
+                  duration={movie.duration_minutes}
+                  posterUrl={movie.poster_url}
+                  rating={movie.rating}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* View All Movies */}

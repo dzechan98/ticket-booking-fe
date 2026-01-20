@@ -1,31 +1,60 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
 
-const mockMovies = [
-  {
-    id: "1",
-    title: "Phim Hành động Blockbuster",
-    genre: "Hành động",
-    duration: 120,
-    releaseDate: "15/01/2026",
-  },
-  {
-    id: "2",
-    title: "Phim Tình cảm Lãng mạn",
-    genre: "Tình cảm",
-    duration: 110,
-    releaseDate: "10/01/2026",
-  },
-  {
-    id: "3",
-    title: "Phim Kinh dị Rợn người",
-    genre: "Kinh dị",
-    duration: 100,
-    releaseDate: "05/01/2026",
-  },
-];
+import { useDeleteMovie } from "@/api/movies/delete";
+import { useListMovies } from "@/api/movies/list";
+import { useListGenres } from "@/api/genres/list";
+import { MoviesList } from "@/components/admin/movies/movie-list";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function AdminMoviesPage() {
+  const router = useRouter();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [genreFilter, setGenreFilter] = useState<string>("all");
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const { data, isLoading } = useListMovies({
+    page,
+    limit: 8,
+    title: debouncedSearch || undefined,
+    genreId: genreFilter === "all" ? undefined : genreFilter,
+  });
+
+  const { data: genresData } = useListGenres({ limit: 100 });
+  const genres = genresData?.items ?? [];
+
+  const { mutateAsync: deleteMovie } = useDeleteMovie();
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, genreFilter]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteMovie(id);
+      toast.success("Xóa phim thành công!");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Không thể xóa phim");
+    }
+  };
+
+  const handleEdit = (id: string) => {
+    router.push(`/admin/movies/edit/${id}`);
+  };
+
   return (
     <div className="p-6 md:p-8">
       {/* Header */}
@@ -38,81 +67,47 @@ export default function AdminMoviesPage() {
             Quản lý danh sách phim chiếu tại rạp
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button
+          onClick={() => router.push("/admin/movies/create")}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
           Thêm phim mới
         </Button>
       </div>
 
-      {/* Movies Table */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Danh sách phim</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-border">
-                <tr>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">
-                    Tên phim
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">
-                    Thể loại
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">
-                    Thời lượng
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">
-                    Ngày phát hành
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-foreground">
-                    Hành động
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockMovies.map((movie) => (
-                  <tr
-                    key={movie.id}
-                    className="border-b border-border hover:bg-secondary transition"
-                  >
-                    <td className="py-3 px-4 font-semibold text-foreground">
-                      {movie.title}
-                    </td>
-                    <td className="py-3 px-4 text-muted-foreground">
-                      {movie.genre}
-                    </td>
-                    <td className="py-3 px-4 text-muted-foreground">
-                      {movie.duration} phút
-                    </td>
-                    <td className="py-3 px-4 text-muted-foreground">
-                      {movie.releaseDate}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-border text-foreground hover:bg-secondary bg-transparent"
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-destructive text-destructive hover:bg-destructive/10 bg-transparent"
-                        >
-                          Xóa
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Search and Filter */}
+      <div className="flex gap-4 mb-6">
+        <Input
+          placeholder="Tìm kiếm theo tên phim..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
+        />
+        <Select value={genreFilter} onValueChange={setGenreFilter}>
+          <SelectTrigger className="w-50">
+            <SelectValue placeholder="Lọc theo thể loại" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả thể loại</SelectItem>
+            {genres.map((genre) => (
+              <SelectItem key={genre.id} value={genre.id}>
+                {genre.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Movies List */}
+      <MoviesList
+        movies={data?.items ?? []}
+        page={data?.page ?? 1}
+        totalPages={data?.totalPages ?? 1}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
