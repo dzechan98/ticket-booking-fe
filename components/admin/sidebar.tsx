@@ -9,6 +9,7 @@ import {
   Tags,
   Ticket,
   Users,
+  Armchair,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -33,6 +34,7 @@ const adminMenuItems = [
   { label: "Quản lý người dùng", href: "/admin/users", icon: Users },
   { label: "Quản lý vé", href: "/admin/tickets", icon: Ticket },
   { label: "Quản lý phòng chiếu", href: "/admin/rooms", icon: Box },
+  { label: "Quản lý ghế ngồi", href: "/admin/seats", icon: Armchair },
   { label: "Quản lý suất chiếu", href: "/admin/showtimes", icon: Clock },
 ];
 
