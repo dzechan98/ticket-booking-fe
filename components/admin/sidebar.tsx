@@ -6,6 +6,7 @@ import {
   Clock,
   Film,
   LogOut,
+  Tags,
   Ticket,
   Users,
 } from "lucide-react";
@@ -28,6 +29,7 @@ import { useAuth } from "@/hooks/use-auth";
 const adminMenuItems = [
   { label: "Dashboard", href: "/admin", icon: BarChart3 },
   { label: "Quản lý phim", href: "/admin/movies", icon: Film },
+  { label: "Quản lý thể loại", href: "/admin/genres", icon: Tags },
   { label: "Quản lý người dùng", href: "/admin/users", icon: Users },
   { label: "Quản lý vé", href: "/admin/tickets", icon: Ticket },
   { label: "Quản lý phòng chiếu", href: "/admin/rooms", icon: Box },
