@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { Chatbot } from "@/components/chatbot/chatbot";
 import { MovieSlider } from "@/components/movies/movie-slider";
 import { MovieCard } from "@/components/movies/movie-card";
 import { useListMovies } from "@/api/movies/list";
@@ -72,6 +73,7 @@ export default function HomePage() {
       </main>
 
       <Footer />
+      <Chatbot />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useUserMe } from "@/api/users/get-me";
 import { useAuth } from "@/hooks/use-auth";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { Chatbot } from "@/components/chatbot/chatbot";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -37,6 +38,7 @@ export default function LayoutUser({
       <Header />
       {children}
       <Footer />
+      <Chatbot />
     </div>
   );
 }
