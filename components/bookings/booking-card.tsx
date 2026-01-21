@@ -1,64 +1,167 @@
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Ticket,
+  Calendar,
+  MapPin,
+  CreditCard,
+  Copy,
+  CheckCircle2,
+  Info,
+} from "lucide-react";
+import { useState } from "react";
 
 interface BookingCardProps {
-  id: string
-  movieTitle: string
-  showtime: string
-  seats: string[]
-  totalPrice: number
-  status: "paid" | "watched" | "cancelled"
-  posterUrl: string
+  id: string;
+  movieTitle: string;
+  showtime: string;
+  seats: string[];
+  totalPrice: number;
+  posterUrl: string;
+  paymentMethod?: string;
+  paymentTime?: string;
+  bookingCode?: string;
 }
 
-const statusConfig = {
-  paid: { label: "Đã thanh toán", color: "bg-green-600 text-white" },
-  watched: { label: "Đã xem", color: "bg-blue-600 text-white" },
-  cancelled: { label: "Đã hủy", color: "bg-red-600 text-white" },
-}
+export function BookingCard({
+  id,
+  movieTitle,
+  showtime,
+  seats,
+  totalPrice,
+  posterUrl,
+  paymentMethod,
+  paymentTime,
+  bookingCode,
+}: BookingCardProps) {
+  const [copied, setCopied] = useState(false);
 
-export function BookingCard({ id, movieTitle, showtime, seats, totalPrice, status, posterUrl }: BookingCardProps) {
+  const handleCopyCode = () => {
+    if (bookingCode) {
+      navigator.clipboard.writeText(bookingCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary transition-colors">
+    <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 group">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
         {/* Movie Poster */}
         <div className="md:col-span-1">
-          <img src={posterUrl || "/placeholder.svg"} alt={movieTitle} className="w-full h-40 object-cover rounded" />
+          <div className="relative w-full h-36 md:h-full rounded-md overflow-hidden">
+            <img
+              src={posterUrl || "/placeholder.svg"}
+              alt={movieTitle}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
         </div>
 
         {/* Booking Details */}
         <div className="md:col-span-2 space-y-3">
           <div>
-            <h3 className="font-bold text-lg text-foreground line-clamp-2">{movieTitle}</h3>
-            <p className="text-sm text-muted-foreground">{showtime}</p>
+            <h3 className="font-bold text-base text-foreground mb-0.5 line-clamp-1">
+              {movieTitle}
+            </h3>
+            {bookingCode && (
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-muted-foreground">Mã:</span>
+                <code className="bg-secondary px-1.5 py-0.5 rounded text-xs font-mono">
+                  {bookingCode}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 px-1.5"
+                  onClick={handleCopyCode}
+                >
+                  {copied ? (
+                    <CheckCircle2 className="h-2.5 w-2.5 text-green-600" />
+                  ) : (
+                    <Copy className="h-2.5 w-2.5" />
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div>
-            <p className="text-sm text-muted-foreground">Ghế:</p>
-            <p className="font-semibold text-foreground">{seats.join(", ")}</p>
-          </div>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-foreground">
+                  {showtime}
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <Badge className={statusConfig[status].color}>{statusConfig[status].label}</Badge>
+            <div className="flex items-start gap-2">
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="flex flex-wrap gap-1">
+                {seats.map((seat) => (
+                  <span
+                    key={seat}
+                    className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-xs font-semibold"
+                  >
+                    {seat}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {paymentMethod && (
+              <div className="flex items-start gap-2">
+                <CreditCard className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-foreground text-xs">
+                    {paymentMethod}
+                  </p>
+                  {paymentTime && (
+                    <p className="text-xs text-muted-foreground">
+                      {paymentTime}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Price and Action */}
-        <div className="md:col-span-1 flex flex-col justify-between items-end">
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Tổng cộng</p>
-            <p className="text-2xl font-bold text-primary">{totalPrice.toLocaleString()} đ</p>
+        {/* Price and Actions */}
+        <div className="md:col-span-1 flex flex-col justify-between items-start md:items-end">
+          <div className="text-left md:text-right">
+            <p className="text-xs text-muted-foreground mb-0.5">
+              Tổng thanh toán
+            </p>
+            <p className="text-xl font-bold text-primary">
+              {totalPrice.toLocaleString()}
+              <span className="text-sm">đ</span>
+            </p>
+            <p className="text-xs text-muted-foreground">{seats.length} vé</p>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-border text-foreground hover:bg-secondary bg-transparent"
-          >
-            Chi tiết
-          </Button>
+          <div className="flex flex-col gap-1.5 w-full md:w-auto mt-3 md:mt-0">
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/90 w-full md:w-auto h-8 text-xs"
+              title="Xem thông tin vé để quét tại rạp"
+            >
+              <Ticket className="h-3 w-3 mr-1.5" />
+              Xem vé
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full md:w-auto h-8 text-xs"
+              title="Xem thông tin chi tiết đặt vé"
+            >
+              <Info className="h-3 w-3 mr-1.5" />
+              Chi tiết
+            </Button>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
