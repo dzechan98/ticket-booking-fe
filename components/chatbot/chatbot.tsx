@@ -5,8 +5,9 @@ import { X, Send, MessageCircle, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Message {
   id: string;
@@ -16,6 +17,7 @@ interface Message {
 }
 
 export function Chatbot() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -128,7 +130,7 @@ export function Chatbot() {
   return (
     <Card
       className={cn(
-        "fixed bottom-6 right-6 z-50 flex flex-col shadow-2xl transition-all duration-300",
+        "fixed bottom-6 right-6 z-50 flex flex-col shadow-2xl border-none transition-all duration-300 p-0 ",
         isMinimized ? "w-80 h-16" : "w-96 h-[600px]",
       )}
     >
@@ -204,8 +206,16 @@ export function Chatbot() {
                 </div>
                 {message.sender === "user" && (
                   <Avatar className="h-8 w-8">
+                    {user?.avatar && (
+                      <AvatarImage
+                        src={user.avatar}
+                        alt={user.full_name || "User"}
+                      />
+                    )}
                     <AvatarFallback className="bg-gray-300 text-gray-700 text-xs">
-                      BẠN
+                      {user?.full_name
+                        ? user.full_name.charAt(0).toUpperCase()
+                        : "BẠN"}
                     </AvatarFallback>
                   </Avatar>
                 )}
