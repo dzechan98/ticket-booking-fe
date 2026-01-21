@@ -49,7 +49,21 @@ export default function MovieDetailPage() {
       <Header />
 
       <main className="flex-1">
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Backdrop Image */}
+        {movie.poster_url && (
+          <div className="relative h-96 -mt-16 pt-16">
+            <div className="absolute inset-0">
+              <img
+                src={movie.poster_url}
+                alt={movie.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+            </div>
+          </div>
+        )}
+
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 relative z-10 pb-16">
           <MovieDetails movie={movie} />
         </section>
       </main>

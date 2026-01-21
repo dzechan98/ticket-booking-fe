@@ -22,44 +22,44 @@ export function MovieCard({
   rating,
 }: MovieCardProps) {
   return (
-    <div className="group overflow-hidden rounded-lg bg-card border border-border hover:border-primary transition-colors">
+    <div className="group overflow-hidden rounded-xl bg-card border border-border hover:border-primary transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
       {/* Poster Image */}
-      <div className="relative overflow-hidden h-64 sm:h-72 md:h-80 bg-secondary">
+      <div className="relative overflow-hidden h-48 sm:h-56 md:h-64 bg-secondary">
         {posterUrl ? (
           <img
             src={posterUrl}
             alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
             <p className="text-muted-foreground">Không có poster</p>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Rating Badge */}
         {rating > 0 && (
-          <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg border border-yellow-400/30">
             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-white font-semibold text-sm">{rating}</span>
+            <span className="text-white font-bold text-sm">{rating}</span>
           </div>
         )}
       </div>
 
       {/* Movie Info */}
-      <div className="p-4">
-        <h3 className="font-bold text-lg text-foreground line-clamp-2 mb-2 group-hover:text-primary transition">
+      <div className="p-3">
+        <h3 className="font-bold text-lg text-foreground line-clamp-2 mb-3 group-hover:text-primary transition-colors">
           {title}
         </h3>
 
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 mb-4">
           {genres && genres.length > 0 ? (
             genres.slice(0, 2).map((genre) => (
               <Badge
                 key={genre.id}
                 variant="secondary"
-                className="text-xs bg-secondary text-secondary-foreground"
+                className="text-xs bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
               >
                 {genre.name}
               </Badge>
@@ -82,9 +82,9 @@ export function MovieCard({
 
         <Button
           asChild
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all"
         >
-          <Link href={`/movies/${id}`}>Đặt vé</Link>
+          <Link href={`/movies/${id}`}>Đặt vé ngay</Link>
         </Button>
       </div>
     </div>

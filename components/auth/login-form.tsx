@@ -20,9 +20,11 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { getError } from "@/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { mutateAsync: loginMutation } = useLogin();
   const { refetch: refetchUser } = useUserMe();
@@ -86,14 +88,28 @@ export function LoginForm() {
             <Label htmlFor="password" className="text-foreground">
               Mật khẩu
             </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              className="border-border text-foreground placeholder:text-muted-foreground"
-              {...register("password")}
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="border-border text-foreground placeholder:text-muted-foreground pr-10"
+                {...register("password")}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-destructive">
                 {errors.password.message}

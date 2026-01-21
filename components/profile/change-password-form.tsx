@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,13 @@ import {
   ChangePasswordInput,
   changePasswordSchema,
 } from "@/lib/validations/profile";
+import { Eye, EyeOff } from "lucide-react";
 
 export function ChangePasswordForm() {
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const form = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
   });
@@ -48,11 +54,25 @@ export function ChangePasswordForm() {
           {/* Current password */}
           <div className="space-y-2">
             <Label>Mật khẩu hiện tại</Label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              {...register("currentPassword")}
-            />
+            <div className="relative">
+              <Input
+                type={showCurrentPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="pr-10"
+                {...register("currentPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showCurrentPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {errors.currentPassword && (
               <p className="text-sm text-destructive">
                 {errors.currentPassword.message}
@@ -63,11 +83,25 @@ export function ChangePasswordForm() {
           {/* New password */}
           <div className="space-y-2">
             <Label>Mật khẩu mới</Label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              {...register("newPassword")}
-            />
+            <div className="relative">
+              <Input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="pr-10"
+                {...register("newPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showNewPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {errors.newPassword && (
               <p className="text-sm text-destructive">
                 {errors.newPassword.message}
@@ -78,11 +112,25 @@ export function ChangePasswordForm() {
           {/* Confirm password */}
           <div className="space-y-2">
             <Label>Xác nhận mật khẩu mới</Label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              {...register("confirmPassword")}
-            />
+            <div className="relative">
+              <Input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="pr-10"
+                {...register("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
             {errors.confirmPassword && (
               <p className="text-sm text-destructive">
                 {errors.confirmPassword.message}
