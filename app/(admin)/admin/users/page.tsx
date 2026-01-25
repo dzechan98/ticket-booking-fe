@@ -67,124 +67,131 @@ export default function AdminUsersPage() {
   if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Quản lý người dùng</h1>
+    <div className="p-6 md:p-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Quản lý người dùng
+          </h1>
+          <p className="text-muted-foreground">
+            Quản lý danh sách người dùng trong hệ thống
+          </p>
+        </div>
+        <Button
+          onClick={() => setOpenCreate(true)}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
+          Thêm người dùng
+        </Button>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Danh sách người dùng</CardTitle>
-            <Button onClick={() => setOpenCreate(true)}>Thêm người dùng</Button>
-          </div>
-        </CardHeader>
+      <div className="flex gap-4 mb-6">
+        <Input
+          placeholder="Tìm kiếm theo email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
+        />
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-45">
+            <SelectValue placeholder="Lọc theo vai trò" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="user">User</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        <CardContent>
-          <div className="flex gap-4 mb-6">
-            <Input
-              placeholder="Tìm kiếm theo email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full"
-            />
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-45">
-                <SelectValue placeholder="Lọc theo vai trò" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="user">User</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="bg-card border-border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Avatar</TableHead>
+              <TableHead>Họ tên</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Giới tính</TableHead>
+              <TableHead>Ngày sinh</TableHead>
+              <TableHead>Vai trò</TableHead>
+              <TableHead className="text-right">Hành động</TableHead>
+            </TableRow>
+          </TableHeader>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Avatar</TableHead>
-                <TableHead>Họ tên</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Giới tính</TableHead>
-                <TableHead>Ngày sinh</TableHead>
-                <TableHead>Vai trò</TableHead>
-                <TableHead className="text-right">Hành động</TableHead>
+          <TableBody>
+            {data?.items.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <Avatar>
+                    <AvatarImage src={user.avatar ?? undefined} />
+                    <AvatarFallback>
+                      {user.full_name?.charAt(0) ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </TableCell>
+
+                <TableCell>{user.full_name ?? "—"}</TableCell>
+                <TableCell>{user.email}</TableCell>
+
+                <TableCell>
+                  {user.gender === Gender.MALE && "Nam"}
+                  {user.gender === Gender.FEMALE && "Nữ"}
+                  {user.gender === Gender.OTHER && "Khác"}
+                </TableCell>
+
+                <TableCell>
+                  {user.dob
+                    ? new Date(user.dob).toLocaleDateString("vi-VN")
+                    : "—"}
+                </TableCell>
+
+                <TableCell>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      user.is_admin
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {user.is_admin ? "Admin" : "User"}
+                  </span>
+                </TableCell>
+
+                <TableCell className="text-right space-x-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setOpenEdit(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      setUserToDelete(user);
+                      setOpenDeleteDialog(true);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
+            ))}
+          </TableBody>
+        </Table>
 
-            <TableBody>
-              {data?.items.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <Avatar>
-                      <AvatarImage src={user.avatar ?? undefined} />
-                      <AvatarFallback>
-                        {user.full_name?.charAt(0) ?? "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </TableCell>
-
-                  <TableCell>{user.full_name ?? "—"}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-
-                  <TableCell>
-                    {user.gender === Gender.MALE && "Nam"}
-                    {user.gender === Gender.FEMALE && "Nữ"}
-                    {user.gender === Gender.OTHER && "Khác"}
-                  </TableCell>
-
-                  <TableCell>
-                    {user.dob
-                      ? new Date(user.dob).toLocaleDateString("vi-VN")
-                      : "—"}
-                  </TableCell>
-
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        user.is_admin
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {user.is_admin ? "Admin" : "User"}
-                    </span>
-                  </TableCell>
-
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setOpenEdit(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {
-                        setUserToDelete(user);
-                        setOpenDeleteDialog(true);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <BasePagination
-            page={page}
-            totalPages={data?.totalPages ?? 1}
-            onPageChange={setPage}
-          />
-        </CardContent>
-      </Card>
+        <BasePagination
+          page={page}
+          totalPages={data?.totalPages ?? 1}
+          onPageChange={setPage}
+        />
+      </div>
 
       <EditUserDialog
         open={openEdit}
