@@ -174,7 +174,6 @@ export function SeatsList({
                     <TableHead>Phòng chiếu</TableHead>
                     <TableHead>Loại ghế</TableHead>
                     <TableHead>Hệ số giá</TableHead>
-                    <TableHead>Trạng thái</TableHead>
                     <TableHead className="text-right">Hành động</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -208,14 +207,6 @@ export function SeatsList({
                         <span className="font-mono">
                           {seat.price_multiplier}x
                         </span>
-                      </TableCell>
-
-                      <TableCell>
-                        <Badge
-                          variant={seat.is_available ? "outline" : "secondary"}
-                        >
-                          {seat.is_available ? "Có sẵn" : "Đã đặt"}
-                        </Badge>
                       </TableCell>
 
                       <TableCell>

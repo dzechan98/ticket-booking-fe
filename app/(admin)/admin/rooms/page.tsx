@@ -111,10 +111,10 @@ export default function AdminRoomsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value={ScreenType.STANDARD}>Standard</SelectItem>
+            <SelectItem value={ScreenType.STANDARD}>Tiêu chuẩn</SelectItem>
             <SelectItem value={ScreenType.IMAX}>IMAX</SelectItem>
             <SelectItem value={ScreenType.SCREEN_X}>ScreenX</SelectItem>
-            <SelectItem value={ScreenType.GOLD_CLASS}>Gold Class</SelectItem>
+            <SelectItem value={ScreenType.GOLD_CLASS}>Phòng VIP</SelectItem>
           </SelectContent>
         </Select>
       </div>

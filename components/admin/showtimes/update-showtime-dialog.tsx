@@ -338,7 +338,13 @@ export function UpdateShowtimeDialog({
                 <FormItem>
                   <FormLabel>Giá vé cơ bản (VNĐ)</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseFloat(e.target.value) || 0)
+                      }
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

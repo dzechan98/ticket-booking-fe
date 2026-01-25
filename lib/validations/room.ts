@@ -11,7 +11,7 @@ export const screenTypeLabels: Record<ScreenType, string> = {
   [ScreenType.STANDARD]: "Tiêu chuẩn",
   [ScreenType.IMAX]: "IMAX",
   [ScreenType.SCREEN_X]: "ScreenX",
-  [ScreenType.GOLD_CLASS]: "Gold Class",
+  [ScreenType.GOLD_CLASS]: "Phòng VIP",
 };
 
 export const createRoomSchema = z.object({

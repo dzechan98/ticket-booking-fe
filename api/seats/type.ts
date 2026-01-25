@@ -36,6 +36,5 @@ export interface SeatResponse extends BaseResponse {
   column: number;
   type: SeatType;
   price_multiplier: number;
-  is_available: boolean;
   room: RoomResponse;
 }

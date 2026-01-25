@@ -312,7 +312,14 @@ export function CreateShowtimeDialog({
                 <FormItem>
                   <FormLabel>Giá vé cơ bản (VNĐ)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="150000" {...field} />
+                    <Input
+                      type="number"
+                      placeholder="150000"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseFloat(e.target.value) || 0)
+                      }
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

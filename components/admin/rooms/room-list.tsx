@@ -46,7 +46,7 @@ export const screenTypeConfig: Record<
   }
 > = {
   [ScreenType.STANDARD]: {
-    label: "Standard",
+    label: "Tiêu chuẩn",
     variant: "secondary",
   },
   [ScreenType.IMAX]: {
@@ -58,7 +58,7 @@ export const screenTypeConfig: Record<
     variant: "outline",
   },
   [ScreenType.GOLD_CLASS]: {
-    label: "Gold Class",
+    label: "Phòng VIP",
     variant: "destructive",
   },
 };
