@@ -30,7 +30,7 @@ export default function ShowtimesPage() {
   const filters = useMemo(() => {
     const params: any = {
       page: currentPage,
-      limit: 10,
+      limit: 12,
     };
 
     if (selectedDate) {
@@ -73,27 +73,34 @@ export default function ShowtimesPage() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
 
-      <main className="flex-1">
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground mb-1">
+      <main className="flex-1 bg-gradient-to-b from-background via-background to-muted/20">
+        {/* Hero Banner */}
+        <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-background border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">
+                  <Film className="h-3.5 w-3.5" />
+                  <span>Đặt vé nhanh chóng</span>
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                   Lịch chiếu phim
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Tìm suất chiếu phù hợp và đặt vé ngay
+                <p className="text-muted-foreground max-w-2xl">
+                  Tìm suất chiếu phù hợp và đặt vé ngay hôm nay. Trải nghiệm
+                  điện ảnh đỉnh cao với hệ thống rạp hiện đại.
                 </p>
               </div>
-              <div className="bg-primary/10 px-4 py-2 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Film className="h-5 w-5 text-primary" />
+              <div className="bg-card border border-border shadow-lg px-6 py-4 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-3 rounded-lg">
+                    <Film className="h-6 w-6 text-primary" />
+                  </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-medium">
                       Tổng suất chiếu
                     </p>
-                    <p className="text-xl font-bold text-primary">
+                    <p className="text-3xl font-bold text-primary">
                       {data?.total || 0}
                     </p>
                   </div>
@@ -101,29 +108,39 @@ export default function ShowtimesPage() {
               </div>
             </div>
           </div>
+        </div>
 
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Search and Filters */}
-          <div className="mb-6 space-y-4">
+          <div className="mb-8 bg-card border border-border rounded-xl shadow-sm p-6 space-y-5">
             {/* Search */}
-            <div className="relative max-w-md">
-              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Tìm kiếm phim..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Search className="h-4 w-4 text-primary" />
+                Tìm kiếm phim
+              </label>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Nhập tên phim bạn muốn xem..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-11 h-11 text-sm border-border focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
             </div>
 
+            <div className="h-px bg-border" />
+
             {/* Filters */}
-            <div className="flex flex-wrap gap-4">
+            <div className="space-y-5">
               {/* Date Filter */}
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  Chọn ngày:
-                </span>
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  Chọn ngày chiếu
+                </label>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
@@ -132,7 +149,7 @@ export default function ShowtimesPage() {
                       setSelectedDate("");
                       setCurrentPage(1);
                     }}
-                    className="h-8 text-xs"
+                    className="h-10 px-4 rounded-lg font-medium transition-all"
                   >
                     Tất cả
                   </Button>
@@ -145,19 +162,26 @@ export default function ShowtimesPage() {
                         setSelectedDate(date);
                         setCurrentPage(1);
                       }}
-                      className="h-8 text-xs"
+                      className="h-10 px-4 rounded-lg font-medium transition-all"
                     >
-                      {format(new Date(date), "dd/MM", { locale: vi })}
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs opacity-75">
+                          {format(new Date(date), "EEE", { locale: vi })}
+                        </span>
+                        <span className="font-bold">
+                          {format(new Date(date), "dd/MM")}
+                        </span>
+                      </div>
                     </Button>
                   ))}
                 </div>
               </div>
 
               {/* Status Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">
-                  Trạng thái:
-                </span>
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground">
+                  Trạng thái suất chiếu
+                </label>
                 <Select
                   value={status || "ALL"}
                   onValueChange={(value) => {
@@ -165,14 +189,14 @@ export default function ShowtimesPage() {
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-35 h-8 text-xs">
+                  <SelectTrigger className="w-full sm:w-64 h-11 border-border focus:ring-2 focus:ring-primary/20">
                     <SelectValue placeholder="Tất cả" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Tất cả</SelectItem>
-                    <SelectItem value="UPCOMING">Sắp chiếu</SelectItem>
-                    <SelectItem value="ONGOING">Đang chiếu</SelectItem>
-                    <SelectItem value="FINISHED">Đã chiếu</SelectItem>
+                    <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                    <SelectItem value="UPCOMING">🔜 Sắp chiếu</SelectItem>
+                    <SelectItem value="ONGOING">▶️ Đang chiếu</SelectItem>
+                    <SelectItem value="FINISHED">✅ Đã chiếu</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -199,16 +223,33 @@ export default function ShowtimesPage() {
           {!isLoading && !error && (
             <>
               {filteredShowtimes.length > 0 ? (
-                <div className="space-y-6">
-                  {filteredShowtimes.map((showtime) => (
-                    <ShowtimeCard key={showtime.id} showtime={showtime} />
-                  ))}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-foreground">
+                      {filteredShowtimes.length} suất chiếu
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6">
+                    {filteredShowtimes.map((showtime) => (
+                      <ShowtimeCard key={showtime.id} showtime={showtime} />
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg">
-                    Không tìm thấy suất chiếu nào
-                  </p>
+                <div className="text-center py-20 bg-card border border-border rounded-xl">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="bg-muted p-6 rounded-full">
+                      <Film className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-foreground mb-1">
+                        Không tìm thấy suất chiếu
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Vui lòng thử lại với bộ lọc khác
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 

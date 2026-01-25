@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Showtime } from "@/api/showtimes/type";
 import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 
 interface ShowtimeCardProps {
   showtime: Showtime;
@@ -16,137 +17,157 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
   const startTime = new Date(showtime.start_time);
   const endTime = new Date(showtime.end_time);
 
+  const isDisabled =
+    showtime.status === "FINISHED" || showtime.status === "CANCELLED";
+
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-all">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4">
-        {/* Movie Info */}
-        <div className="md:col-span-2">
-          <div className="flex gap-4">
+    <div className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all duration-300">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+        {/* Movie Info - Left Side */}
+        <div className="lg:col-span-4 bg-gradient-to-br from-muted/50 to-background p-6">
+          <div className="flex gap-5">
             {/* Poster */}
-            <div className="relative w-24 h-36 rounded-md overflow-hidden shrink-0">
+            <div className="relative w-28 h-40 rounded-lg overflow-hidden shrink-0 shadow-lg ring-2 ring-border group-hover:ring-primary/30 transition-all">
               <Image
                 src={showtime.movie.poster_url || "/placeholder-movie.jpg"}
                 alt={showtime.movie.title}
                 fill
-                className="object-cover"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
 
-            {/* Details */}
-            <div className="flex-1 space-y-2">
-              <h3 className="font-bold text-base text-foreground line-clamp-2">
-                {showtime.movie.title}
-              </h3>
+            {/* Movie Details */}
+            <div className="flex-1 space-y-3">
+              <div>
+                <h3 className="font-bold text-lg text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                  {showtime.movie.title}
+                </h3>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                  <span className="font-semibold text-foreground">
-                    {showtime.movie.rating}
-                  </span>
-                  <span>/ 10</span>
-                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-md">
+                    <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                    <span className="font-bold text-sm text-foreground">
+                      {showtime.movie.rating}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/10</span>
+                  </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  <span>{showtime.movie.duration_minutes} phút</span>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="font-medium">
+                      {showtime.movie.duration_minutes}m
+                    </span>
+                  </div>
                 </div>
+              </div>
 
-                <div className="flex flex-wrap gap-1">
-                  {showtime.movie.genres?.map((genre: any) => (
-                    <Badge
-                      key={genre.id}
-                      variant="secondary"
-                      className="text-xs px-1.5 py-0"
-                    >
-                      {genre.name}
-                    </Badge>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-1.5">
+                {showtime.movie.genres?.slice(0, 3).map((genre: any) => (
+                  <Badge
+                    key={genre.id}
+                    variant="secondary"
+                    className="text-xs px-2 py-0.5 font-medium"
+                  >
+                    {genre.name}
+                  </Badge>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Showtime Details */}
-        <div className="md:col-span-3 space-y-3">
-          <div className="p-4 rounded-md border border-border bg-muted/30">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span className="font-medium">Ngày chiếu</span>
-                </div>
-                <p className="text-sm font-semibold text-foreground">
-                  {format(startTime, "dd/MM/yyyy")}
-                </p>
+        {/* Showtime Details - Right Side */}
+        <div className="lg:col-span-8 p-6 flex flex-col justify-between">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-4">
+            {/* Date */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                <span>Ngày chiếu</span>
               </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-medium">Giờ chiếu</span>
-                </div>
-                <p className="text-sm font-semibold text-foreground">
-                  {format(startTime, "HH:mm")} - {format(endTime, "HH:mm")}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span className="font-medium">Phòng chiếu</span>
-                </div>
-                <p className="text-sm font-semibold text-foreground">
-                  {showtime.room.name}
-                </p>
-                <Badge variant="outline" className="text-xs">
-                  {showtime.room.screen_type}
-                </Badge>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="font-medium">Giá vé</span>
-                </div>
-                <p className="text-lg font-bold text-primary">
-                  {showtime.base_price.toLocaleString()}đ
-                </p>
-              </div>
+              <p className="text-base font-bold text-foreground">
+                {format(startTime, "dd/MM/yyyy")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {format(startTime, "EEEE", { locale: vi })}
+              </p>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <Badge
-                variant={
-                  showtime.status === "UPCOMING"
-                    ? "default"
-                    : showtime.status === "ONGOING"
-                      ? "secondary"
-                      : "outline"
-                }
-              >
-                {showtime.status === "UPCOMING"
-                  ? "Sắp chiếu"
-                  : showtime.status === "ONGOING"
-                    ? "Đang chiếu"
-                    : showtime.status === "FINISHED"
-                      ? "Đã chiếu"
-                      : "Đã hủy"}
+            {/* Time */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                <Clock className="h-3.5 w-3.5 text-primary" />
+                <span>Giờ chiếu</span>
+              </div>
+              <p className="text-base font-bold text-foreground">
+                {format(startTime, "HH:mm")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Kết thúc {format(endTime, "HH:mm")}
+              </p>
+            </div>
+
+            {/* Room */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                <span>Phòng chiếu</span>
+              </div>
+              <p className="text-base font-bold text-foreground">
+                {showtime.room.name}
+              </p>
+              <Badge variant="outline" className="text-xs font-medium w-fit">
+                {showtime.room.screen_type}
               </Badge>
-
-              <Link href={`/booking/${showtime.id}`}>
-                <Button
-                  size="sm"
-                  disabled={
-                    showtime.status === "FINISHED" ||
-                    showtime.status === "CANCELLED"
-                  }
-                >
-                  <Armchair className="h-4 w-4 mr-2" />
-                  Đặt vé
-                </Button>
-              </Link>
             </div>
+
+            {/* Price */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                <span>Giá vé</span>
+              </div>
+              <p className="text-xl font-bold text-primary">
+                {showtime.base_price.toLocaleString()}đ
+              </p>
+              <p className="text-xs text-muted-foreground">/vé</p>
+            </div>
+          </div>
+
+          {/* Action Section */}
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <Badge
+              variant={
+                showtime.status === "UPCOMING"
+                  ? "default"
+                  : showtime.status === "ONGOING"
+                    ? "secondary"
+                    : "outline"
+              }
+              className="text-sm px-3 py-1"
+            >
+              {showtime.status === "UPCOMING"
+                ? "🔜 Sắp chiếu"
+                : showtime.status === "ONGOING"
+                  ? "▶️ Đang chiếu"
+                  : showtime.status === "FINISHED"
+                    ? "✅ Đã chiếu"
+                    : "❌ Đã hủy"}
+            </Badge>
+
+            <Link href={`/booking/${showtime.id}`}>
+              <Button
+                size="lg"
+                disabled={isDisabled}
+                className={`${
+                  !isDisabled
+                    ? "bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    : ""
+                } transition-all duration-200 px-8`}
+              >
+                <Armchair className="h-4 w-4 mr-2" />
+                <span className="font-semibold">Đặt vé ngay</span>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
