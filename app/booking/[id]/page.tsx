@@ -12,10 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Calendar, Clock, MapPin, Film, Armchair } from "lucide-react";
 import { useShowtime } from "@/api/showtimes/detail";
 import { useShowtimeSeats } from "@/api/showtimes/seats";
+import { useCreateBooking } from "@/api/bookings/create";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import Image from "next/image";
 import type { PaymentInput } from "@/lib/validations/booking";
+import { toast } from "sonner";
 
 export default function BookingPage() {
   const params = useParams();
@@ -30,6 +32,10 @@ export default function BookingPage() {
     useShowtime(showtimeId);
   const { data: seatsData, isLoading: isLoadingSeats } =
     useShowtimeSeats(showtimeId);
+
+  // Create booking mutation
+  const { mutate: createBooking, isPending: isCreatingBooking } =
+    useCreateBooking();
 
   const steps = ["Chọn ghế", "Xác nhận & thanh toán"];
 
@@ -47,11 +53,32 @@ export default function BookingPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
-  const handlePayment = async (paymentData: PaymentInput) => {
-    console.log("Payment submitted:", paymentData);
-    // TODO: Process payment with showtime and seats
-    alert("Đặt vé thành công! Chúc bạn xem phim vui vẻ!");
-    router.push("/bookings");
+  const handlePayment = async () => {
+    if (selectedSeats.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một ghế");
+      return;
+    }
+
+    createBooking(
+      {
+        showtime_id: showtimeId,
+        seat_ids: selectedSeats,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(`Đặt vé thành công! Mã đặt vé: ${data.id}`, {
+            description: "Chúc bạn xem phim vui vẻ!",
+          });
+          router.push("/bookings");
+        },
+        onError: (error: any) => {
+          toast.error("Đặt vé thất bại", {
+            description:
+              error?.message || "Có lỗi xảy ra khi đặt vé. Vui lòng thử lại.",
+          });
+        },
+      },
+    );
   };
 
   if (isLoadingShowtime || isLoadingSeats) {
@@ -252,7 +279,11 @@ export default function BookingPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Payment Form */}
               <div className="lg:col-span-2">
-                <PaymentForm totalPrice={totalPrice} onSubmit={handlePayment} />
+                <PaymentForm
+                  totalPrice={totalPrice}
+                  onSubmit={handlePayment}
+                  isLoading={isCreatingBooking}
+                />
               </div>
 
               {/* Order Summary */}

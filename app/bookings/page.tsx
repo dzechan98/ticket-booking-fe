@@ -1,95 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { BookingCard } from "@/components/bookings/booking-card";
 import { Input } from "@/components/ui/input";
-import { Search, Ticket } from "lucide-react";
-
-const mockBookings = [
-  {
-    id: "1",
-    movieTitle: "MAI - Trấn Thành",
-    showtime: "25/01/2026 - 19:30 - Rạp 1",
-    seats: ["A5", "A6"],
-    totalPrice: 300000,
-    posterUrl:
-      "https://cdn-images.vtv.vn/562122370168008704/2023/11/28/photo-1-17011453442011344132442.jpg",
-    paymentMethod: "Thanh toán online",
-    paymentTime: "25/01/2026 - 15:20",
-    bookingCode: "BK2026012500001",
-  },
-  {
-    id: "2",
-    movieTitle: "Doraemon: Nobita và Bản Giao Hưởng Địa Cầu",
-    showtime: "23/01/2026 - 14:00 - Rạp 3",
-    seats: ["B3", "B4", "B5"],
-    totalPrice: 450000,
-    posterUrl: "https://i.ytimg.com/vi/OohVWM1u6rU/maxresdefault.jpg",
-    paymentMethod: "Thanh toán online",
-    paymentTime: "22/01/2026 - 10:15",
-    bookingCode: "BK2026012200002",
-  },
-  {
-    id: "3",
-    movieTitle: "Cám - Nguyễn Phi Vân",
-    showtime: "20/01/2026 - 21:00 - Rạp 5",
-    seats: ["C2"],
-    totalPrice: 150000,
-    posterUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfbzsZy0Vw0Kqx6Rh7Q3sZlVQiGbmLZ1xQIg&s",
-    paymentMethod: "Thanh toán online",
-    paymentTime: "20/01/2026 - 18:00",
-    bookingCode: "BK2026012000003",
-  },
-  {
-    id: "4",
-    movieTitle: "Avengers: Endgame",
-    showtime: "18/01/2026 - 20:00 - Rạp 2",
-    seats: ["D5", "D6", "D7", "D8"],
-    totalPrice: 600000,
-    posterUrl:
-      "https://lumiere-a.akamaihd.net/v1/images/p_avengersendgame_19751_e14a0104.jpeg",
-    paymentMethod: "Thanh toán online",
-    paymentTime: "17/01/2026 - 18:30",
-    bookingCode: "BK2026011700004",
-  },
-  {
-    id: "5",
-    movieTitle: "Spider-Man: No Way Home",
-    showtime: "15/01/2026 - 16:30 - Rạp 4",
-    seats: ["E10", "E11"],
-    totalPrice: 280000,
-    posterUrl:
-      "https://m.media-amazon.com/images/M/MV5BZWMyYzFjYTYtNTRjYi00OGExLWE2YzgtOGRmYjAxZTU3NzBiXkEyXkFqcGdeQXVyMzQ0MzA0NTM@._V1_.jpg",
-    paymentMethod: "Thanh toán online",
-    paymentTime: "15/01/2026 - 12:00",
-    bookingCode: "BK2026011500005",
-  },
-  {
-    id: "6",
-    movieTitle: "Oppenheimer",
-    showtime: "30/01/2026 - 20:30 - Rạp 1",
-    seats: ["F5", "F6"],
-    totalPrice: 320000,
-    posterUrl:
-      "https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyZGE5NTVjXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_.jpg",
-    paymentMethod: "Thanh toán online",
-    paymentTime: "29/01/2026 - 14:45",
-    bookingCode: "BK2026012900006",
-  },
-];
+import { Search, Ticket, Loader2 } from "lucide-react";
+import { useMyBookings } from "@/api/bookings/list";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { BasePagination } from "@/components/common/base-pagination";
 
 export default function BookingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredBookings = mockBookings.filter((booking) => {
-    const matchesSearch =
-      booking.movieTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.bookingCode.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+  // Fetch user's bookings
+  const { data, isLoading, error } = useMyBookings({
+    page: currentPage,
+    limit: 10,
   });
+
+  // Filter bookings by search query
+  const filteredBookings = useMemo(() => {
+    if (!data?.items) return [];
+
+    if (!searchQuery) return data.items;
+
+    return data.items.filter(
+      (booking) =>
+        booking.showtime.movie.title
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        booking.id.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [data, searchQuery]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -114,7 +59,7 @@ export default function BookingsPage() {
                   <div>
                     <p className="text-xs text-muted-foreground">Tổng vé</p>
                     <p className="text-xl font-bold text-primary">
-                      {mockBookings.length}
+                      {data?.total || 0}
                     </p>
                   </div>
                 </div>
@@ -136,17 +81,72 @@ export default function BookingsPage() {
             </div>
           </div>
 
-          {/* Bookings List */}
-          {filteredBookings.length > 0 ? (
-            <div className="space-y-4">
-              {filteredBookings.map((booking) => (
-                <BookingCard key={booking.id} {...booking} />
-              ))}
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                <p className="text-muted-foreground">
+                  Đang tải danh sách vé...
+                </p>
+              </div>
             </div>
-          ) : (
+          )}
+
+          {/* Error State */}
+          {error && (
             <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">Không có vé nào</p>
+              <p className="text-destructive text-lg">
+                Có lỗi xảy ra khi tải danh sách vé
+              </p>
             </div>
+          )}
+
+          {/* Bookings List */}
+          {!isLoading && !error && (
+            <>
+              {filteredBookings.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredBookings.map((booking) => (
+                    <BookingCard
+                      key={booking.id}
+                      id={booking.id}
+                      movieTitle={booking.showtime.movie.title}
+                      showtime={`${format(new Date(booking.showtime.start_time), "dd/MM/yyyy - HH:mm", { locale: vi })} - ${booking.showtime.room.name}`}
+                      seats={booking.tickets.map(
+                        (t) => `${t.seat.row}${t.seat.column}`,
+                      )}
+                      totalPrice={booking.total_price}
+                      posterUrl={booking.showtime.movie.poster_url || ""}
+                      paymentMethod="Thanh toán online"
+                      paymentTime={format(
+                        new Date(booking.paid_at),
+                        "dd/MM/yyyy - HH:mm",
+                        { locale: vi },
+                      )}
+                      bookingCode={booking.id}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground text-lg">
+                    Không có vé nào
+                  </p>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {data && data.totalPages > 1 && (
+                <div className="mt-8">
+                  <BasePagination
+                    page={currentPage}
+                    totalPages={data.totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </>
           )}
         </section>
       </main>
