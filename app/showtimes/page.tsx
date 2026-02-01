@@ -36,7 +36,15 @@ export default function ShowtimesPage() {
     };
 
     if (selectedDate) {
-      params.start_time = selectedDate;
+      const today = format(new Date(), "yyyy-MM-dd");
+
+      // Nếu chọn ngày hôm nay, lấy từ thời điểm hiện tại
+      if (selectedDate === today) {
+        params.start_time = new Date().toISOString();
+      } else {
+        // Nếu chọn ngày khác, lấy từ đầu ngày (00:00:00)
+        params.start_time = new Date(selectedDate).toISOString();
+      }
     }
 
     if (status) {

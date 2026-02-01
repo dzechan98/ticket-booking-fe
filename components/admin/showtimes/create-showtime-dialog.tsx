@@ -35,7 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, getError } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { useCreateShowtime } from "@/api/showtimes/create";
 import { useListMovies } from "@/api/movies/list";
@@ -44,13 +44,24 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
-const showtimeSchema = z.object({
-  movie_id: z.string().min(1, "Vui lòng chọn phim"),
-  room_id: z.string().min(1, "Vui lòng chọn phòng chiếu"),
-  start_time: z.string().min(1, "Vui lòng chọn thời gian bắt đầu"),
-  end_time: z.string().min(1, "Vui lòng chọn thời gian kết thúc"),
-  base_price: z.number().min(0, "Giá vé phải lớn hơn 0"),
-});
+const showtimeSchema = z
+  .object({
+    movie_id: z.string().min(1, "Vui lòng chọn phim"),
+    room_id: z.string().min(1, "Vui lòng chọn phòng chiếu"),
+    start_time: z.string().min(1, "Vui lòng chọn thời gian bắt đầu"),
+    end_time: z.string().min(1, "Vui lòng chọn thời gian kết thúc"),
+    base_price: z.number().min(0, "Giá vé phải lớn hơn 0"),
+  })
+  .refine(
+    (data) => {
+      if (!data.start_time || !data.end_time) return true;
+      return new Date(data.start_time) <= new Date(data.end_time);
+    },
+    {
+      message: "Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc",
+      path: ["end_time"],
+    },
+  );
 
 type ShowtimeFormData = z.infer<typeof showtimeSchema>;
 
@@ -83,6 +94,17 @@ export function CreateShowtimeDialog({
   const [startTime, setStartTime] = React.useState("09:00");
   const [endTime, setEndTime] = React.useState("11:00");
 
+  // Reset form khi dialog được mở
+  React.useEffect(() => {
+    if (open) {
+      form.reset();
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setStartTime("09:00");
+      setEndTime("11:00");
+    }
+  }, [open, form]);
+
   const onSubmit = (data: ShowtimeFormData) => {
     createShowtime(
       {
@@ -94,13 +116,14 @@ export function CreateShowtimeDialog({
         onSuccess: () => {
           toast.success("Tạo suất chiếu thành công");
           form.reset();
+          setStartDate(undefined);
+          setEndDate(undefined);
+          setStartTime("09:00");
+          setEndTime("11:00");
           onOpenChange(false);
         },
         onError: (error: any) => {
-          toast.error(
-            error?.response?.data?.message ||
-              "Có lỗi xảy ra khi tạo suất chiếu",
-          );
+          toast.error(getError(error) || "Có lỗi xảy ra khi tạo suất chiếu");
         },
       },
     );

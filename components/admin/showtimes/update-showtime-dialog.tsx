@@ -35,7 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, getError } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { useUpdateShowtime } from "@/api/showtimes/update";
 import { useListMovies } from "@/api/movies/list";
@@ -45,14 +45,25 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
-const showtimeSchema = z.object({
-  movie_id: z.string().optional(),
-  room_id: z.string().optional(),
-  start_time: z.string().optional(),
-  end_time: z.string().optional(),
-  base_price: z.number().min(0, "Giá vé phải lớn hơn 0").optional(),
-  status: z.enum(["UPCOMING", "ONGOING", "FINISHED", "CANCELLED"]).optional(),
-});
+const showtimeSchema = z
+  .object({
+    movie_id: z.string().optional(),
+    room_id: z.string().optional(),
+    start_time: z.string().optional(),
+    end_time: z.string().optional(),
+    base_price: z.number().min(0, "Giá vé phải lớn hơn 0").optional(),
+    status: z.enum(["UPCOMING", "ONGOING", "FINISHED", "CANCELLED"]).optional(),
+  })
+  .refine(
+    (data) => {
+      if (!data.start_time || !data.end_time) return true;
+      return new Date(data.start_time) <= new Date(data.end_time);
+    },
+    {
+      message: "Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc",
+      path: ["end_time"],
+    },
+  );
 
 type ShowtimeFormData = z.infer<typeof showtimeSchema>;
 
@@ -126,8 +137,7 @@ export function UpdateShowtimeDialog({
         },
         onError: (error: any) => {
           toast.error(
-            error?.response?.data?.message ||
-              "Có lỗi xảy ra khi cập nhật suất chiếu",
+            getError(error) ?? "Có lỗi xảy ra khi cập nhật suất chiếu",
           );
         },
       },
