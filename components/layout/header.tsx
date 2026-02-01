@@ -59,8 +59,8 @@ export function Header() {
             <NavLink href="/movies" icon={Film}>
               Phim
             </NavLink>
-            <NavLink href="/schedule" icon={Calendar}>
-              Lịch chiếu
+            <NavLink href="/showtimes" icon={Calendar}>
+              Showtime
             </NavLink>
             <NavLink href="/bookings" icon={Ticket}>
               Lịch sử đặt vé

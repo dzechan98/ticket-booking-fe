@@ -22,7 +22,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ShowtimesPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>(
+    format(new Date(), "yyyy-MM-dd"),
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [status, setStatus] = useState<string>("");
 
@@ -34,7 +36,7 @@ export default function ShowtimesPage() {
     };
 
     if (selectedDate) {
-      params.date = selectedDate;
+      params.start_time = selectedDate;
     }
 
     if (status) {
@@ -51,6 +53,8 @@ export default function ShowtimesPage() {
     if (!data?.items) return [];
 
     if (!searchQuery) return data.items;
+
+    console.log(1);
 
     return data.items.filter((showtime) =>
       showtime.movie.title.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -142,17 +146,6 @@ export default function ShowtimesPage() {
                   Chọn ngày chiếu
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant={selectedDate === "" ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedDate("");
-                      setCurrentPage(1);
-                    }}
-                    className="h-10 px-4 rounded-lg font-medium transition-all"
-                  >
-                    Tất cả
-                  </Button>
                   {availableDates.map((date) => (
                     <Button
                       key={date}
@@ -186,6 +179,7 @@ export default function ShowtimesPage() {
                   value={status || "ALL"}
                   onValueChange={(value) => {
                     setStatus(value === "ALL" ? "" : value);
+
                     setCurrentPage(1);
                   }}
                 >
@@ -194,9 +188,9 @@ export default function ShowtimesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-                    <SelectItem value="UPCOMING">🔜 Sắp chiếu</SelectItem>
-                    <SelectItem value="ONGOING">▶️ Đang chiếu</SelectItem>
-                    <SelectItem value="FINISHED">✅ Đã chiếu</SelectItem>
+                    <SelectItem value="UPCOMING"> Sắp chiếu</SelectItem>
+                    <SelectItem value="ONGOING"> Đang chiếu</SelectItem>
+                    <SelectItem value="FINISHED"> Đã chiếu</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

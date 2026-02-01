@@ -1,18 +1,43 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, Calendar, Clock, Film } from "lucide-react";
+"use client";
+
 import type { MovieResponse } from "@/api/movies/type";
-import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format, isToday, isTomorrow } from "date-fns";
 import { vi } from "date-fns/locale";
-import Image from "next/image";
+import { Calendar, Clock, Film, MapPin, Star } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
 
 interface MovieDetailsProps {
   movie: MovieResponse;
 }
 
 export function MovieDetails({ movie }: MovieDetailsProps) {
+  // Filter and sort showtimes - only show from now onwards
+  const upcomingShowtimes = useMemo(() => {
+    if (!movie.showtimes) return [];
+
+    const now = new Date();
+
+    return movie.showtimes
+      .filter((showtime) => {
+        const showtimeDate = new Date(showtime.start_time);
+        return showtimeDate.getTime() >= now.getTime(); // So sánh theo thời gian chính xác
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
+      );
+  }, [movie.showtimes]);
+
+  const formatShowtimeDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (isToday(date)) return "Hôm nay";
+    if (isTomorrow(date)) return "Ngày mai";
+    return format(date, "EEEE, dd/MM", { locale: vi });
+  };
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Chưa công bố";
     try {
@@ -117,10 +142,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
       </div>
 
       {/* Showtimes Section */}
-      <Card
-        id="showtimes"
-        className="bg-card/80 backdrop-blur-sm border border-border shadow-lg hover:shadow-xl transition-all duration-300"
-      >
+      <Card className="bg-card/80 backdrop-blur-sm border border-border shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
             <div className="h-6 w-1 bg-primary rounded-full" />
@@ -128,119 +150,53 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Date Selector */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {Array.from({ length: 7 }).map((_, index) => {
-              const date = new Date();
-              date.setDate(date.getDate() + index);
-              const isToday = index === 0;
-
-              return (
-                <button
-                  key={index}
-                  className={`flex-shrink-0 px-4 py-3 rounded-lg border-2 transition-all duration-200 min-w-[100px] ${
-                    index === 0
-                      ? "border-primary bg-primary text-primary-foreground shadow-lg"
-                      : "border-border bg-card hover:border-primary hover:bg-secondary"
-                  }`}
+          {upcomingShowtimes.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {upcomingShowtimes.map((showtime) => (
+                <Button
+                  key={showtime.id}
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all flex-col h-auto py-3"
                 >
-                  <div className="text-xs font-semibold">
-                    {isToday ? "Hôm nay" : format(date, "EEE", { locale: vi })}
-                  </div>
-                  <div className="text-sm font-bold mt-1">
-                    {format(date, "dd/MM", { locale: vi })}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Showtimes by Cinema/Room */}
-          <div className="space-y-4">
-            {/* Example Cinema 1 */}
-            <div className="p-4 rounded-lg bg-secondary/50 border border-border/50">
-              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
-                <Film className="h-4 w-4 text-primary" />
-                Rạp 1 - Phòng Standard
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                {["09:00", "11:30", "14:00", "16:30", "19:00", "21:30"].map(
-                  (time) => (
-                    <Button
-                      key={time}
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                  <Link href={`/booking/${showtime.id}`}>
+                    <div className="flex items-center gap-1 font-bold text-base mb-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {format(new Date(showtime.start_time), "HH:mm")}
+                    </div>
+                    <div className="text-xs opacity-75 font-medium">
+                      {formatShowtimeDate(showtime.start_time)}
+                    </div>
+                    <div className="text-xs opacity-75 flex items-center gap-1 mt-1">
+                      <MapPin className="h-3 w-3" />
+                      {showtime.room.name}
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] mt-1 px-1.5 py-0"
                     >
-                      <Link href={`/booking/${movie.id}?time=${time}`}>
-                        <Clock className="h-3 w-3 mr-1" />
-                        {time}
-                      </Link>
-                    </Button>
-                  ),
-                )}
+                      {showtime.room.screen_type}
+                    </Badge>
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <div className="bg-muted p-4 rounded-full">
+                  <Calendar className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-foreground font-semibold">
+                  Hiện tại không có lịch chiếu
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Vui lòng quay lại sau hoặc chọn phim khác
+                </p>
               </div>
             </div>
-
-            {/* Example Cinema 2 */}
-            <div className="p-4 rounded-lg bg-secondary/50 border border-border/50">
-              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
-                <Film className="h-4 w-4 text-primary" />
-                Rạp 2 - Phòng VIP
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                {["10:00", "13:00", "15:30", "18:00", "20:30"].map((time) => (
-                  <Button
-                    key={time}
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all"
-                  >
-                    <Link href={`/booking/${movie.id}?time=${time}`}>
-                      <Clock className="h-3 w-3 mr-1" />
-                      {time}
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Example Cinema 3 */}
-            <div className="p-4 rounded-lg bg-secondary/50 border border-border/50">
-              <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
-                <Film className="h-4 w-4 text-primary" />
-                Rạp 3 - Phòng IMAX
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                {["12:00", "14:30", "17:00", "19:30", "22:00"].map((time) => (
-                  <Button
-                    key={time}
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all"
-                  >
-                    <Link href={`/booking/${movie.id}?time=${time}`}>
-                      <Clock className="h-3 w-3 mr-1" />
-                      {time}
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Note */}
-          <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg border border-border/50">
-            <p className="font-semibold mb-1">📌 Lưu ý:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Vui lòng đến trước giờ chiếu 15 phút</li>
-              <li>Xuất trình mã QR hoặc mã đặt vé tại quầy</li>
-              <li>Không hoàn tiền sau khi đã đặt vé</li>
-            </ul>
-          </div>
+          )}
         </CardContent>
       </Card>
 

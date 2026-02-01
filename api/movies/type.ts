@@ -1,5 +1,6 @@
 import type { BaseResponse } from "@/types/common";
 import type { GenreResponse } from "../genres/type";
+import type { Showtime } from "../showtimes/type";
 
 export interface CreateMovieDto {
   title: string;
@@ -32,4 +33,5 @@ export interface MovieResponse extends BaseResponse {
   trailer_url: string | null;
   genres: GenreResponse[];
   rating: number;
+  showtimes?: Showtime[];
 }
