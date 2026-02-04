@@ -12,6 +12,10 @@ export interface UpdateBookingDto {
 }
 
 export interface BookingResponse extends BaseResponse {
+  status: "pending" | "paid" | "expired" | "cancelled";
+  transaction_ref: string;
+  payment_url?: string;
+  vnpay_response_code?: string;
   user: {
     id: string;
     email: string;
@@ -44,5 +48,5 @@ export interface BookingResponse extends BaseResponse {
     used_at: Date | null;
   }[];
   total_price: number;
-  paid_at: Date;
+  paid_at: Date | null;
 }

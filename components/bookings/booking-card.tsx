@@ -1,18 +1,8 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Ticket,
-  Calendar,
-  MapPin,
-  CreditCard,
-  Copy,
-  CheckCircle2,
-  Info,
-} from "lucide-react";
+import { Calendar, MapPin, CreditCard, Copy, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
 interface BookingCardProps {
-  id: string;
   movieTitle: string;
   showtime: string;
   seats: string[];
@@ -24,7 +14,6 @@ interface BookingCardProps {
 }
 
 export function BookingCard({
-  id,
   movieTitle,
   showtime,
   seats,
@@ -53,7 +42,7 @@ export function BookingCard({
             <img
               src={posterUrl || "/placeholder.svg"}
               alt={movieTitle}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="h-40 w-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
         </div>
@@ -139,26 +128,6 @@ export function BookingCard({
               <span className="text-sm">đ</span>
             </p>
             <p className="text-xs text-muted-foreground">{seats.length} vé</p>
-          </div>
-
-          <div className="flex flex-col gap-1.5 w-full md:w-auto mt-3 md:mt-0">
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-primary/90 w-full md:w-auto h-8 text-xs"
-              title="Xem thông tin vé để quét tại rạp"
-            >
-              <Ticket className="h-3 w-3 mr-1.5" />
-              Xem vé
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full md:w-auto h-8 text-xs"
-              title="Xem thông tin chi tiết đặt vé"
-            >
-              <Info className="h-3 w-3 mr-1.5" />
-              Chi tiết
-            </Button>
           </div>
         </div>
       </div>

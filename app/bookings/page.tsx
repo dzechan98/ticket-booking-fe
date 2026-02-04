@@ -110,7 +110,6 @@ export default function BookingsPage() {
                   {filteredBookings.map((booking) => (
                     <BookingCard
                       key={booking.id}
-                      id={booking.id}
                       movieTitle={booking.showtime.movie.title}
                       showtime={`${format(new Date(booking.showtime.start_time), "dd/MM/yyyy - HH:mm", { locale: vi })} - ${booking.showtime.room.name}`}
                       seats={booking.tickets.map(
@@ -124,7 +123,7 @@ export default function BookingsPage() {
                         "dd/MM/yyyy - HH:mm",
                         { locale: vi },
                       )}
-                      bookingCode={booking.id}
+                      bookingCode={booking.transaction_ref}
                     />
                   ))}
                 </div>
