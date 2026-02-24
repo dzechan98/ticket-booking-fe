@@ -1,6 +1,7 @@
 "use client";
 
 import { ShowtimeSeat } from "@/api/showtimes/type";
+import { seatTypeLabels } from "@/lib/utils/enum-labels";
 import { useEffect, useMemo, useState } from "react";
 
 type SeatStatus = "available" | "selected" | "booked";
@@ -82,11 +83,15 @@ export function SeatSelector({
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-purple-600 border-2 border-purple-400" />
-          <span className="text-foreground font-medium">VIP</span>
+          <span className="text-foreground font-medium">
+            {seatTypeLabels.VIP}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-pink-600 border-2 border-pink-400" />
-          <span className="text-foreground font-medium">Couple</span>
+          <span className="text-foreground font-medium">
+            {seatTypeLabels.COUPLE}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded bg-primary border-2 border-primary" />

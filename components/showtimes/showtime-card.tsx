@@ -6,6 +6,11 @@ import { Clock, MapPin, Star, Armchair, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Showtime } from "@/api/showtimes/type";
+import {
+  screenTypeLabels,
+  showtimeStatusLabels,
+  showtimeStatusIcons,
+} from "@/lib/utils/enum-labels";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
@@ -117,7 +122,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
                 {showtime.room.name}
               </p>
               <Badge variant="outline" className="text-xs font-medium w-fit">
-                {showtime.room.screen_type}
+                {screenTypeLabels[showtime.room.screen_type]}
               </Badge>
             </div>
 
@@ -145,13 +150,8 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
               }
               className="text-sm px-3 py-1"
             >
-              {showtime.status === "UPCOMING"
-                ? "🔜 Sắp chiếu"
-                : showtime.status === "ONGOING"
-                  ? "▶️ Đang chiếu"
-                  : showtime.status === "FINISHED"
-                    ? "✅ Đã chiếu"
-                    : "❌ Đã hủy"}
+              {showtimeStatusIcons[showtime.status]}{" "}
+              {showtimeStatusLabels[showtime.status]}
             </Badge>
 
             <Link href={`/booking/${showtime.id}`}>

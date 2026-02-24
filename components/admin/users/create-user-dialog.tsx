@@ -41,6 +41,7 @@ import { toast } from "sonner";
 
 import { useCreateUser } from "@/api/users/create";
 import { Gender } from "@/api/users/type";
+import { genderLabels } from "@/lib/utils/enum-labels";
 
 interface Props {
   open: boolean;
@@ -134,9 +135,11 @@ export function CreateUserDialog({ open, onOpenChange }: Props) {
                     <SelectValue placeholder="Chọn giới tính" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={Gender.MALE}>Nam</SelectItem>
-                    <SelectItem value={Gender.FEMALE}>Nữ</SelectItem>
-                    <SelectItem value={Gender.OTHER}>Khác</SelectItem>
+                    {Object.values(Gender).map((gender) => (
+                      <SelectItem key={gender} value={gender}>
+                        {genderLabels[gender]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}

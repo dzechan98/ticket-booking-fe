@@ -38,6 +38,7 @@ import Image from "next/image";
 import { uploadImage } from "@/api/upload-image.";
 import { useAuth } from "@/hooks/use-auth";
 import { Gender } from "@/api/users/type";
+import { genderLabels } from "@/lib/utils/enum-labels";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function ProfileForm() {
@@ -184,9 +185,11 @@ export function ProfileForm() {
                     <SelectValue placeholder="Chọn giới tính" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={Gender.MALE}>Nam</SelectItem>
-                    <SelectItem value={Gender.FEMALE}>Nữ</SelectItem>
-                    <SelectItem value={Gender.OTHER}>Khác</SelectItem>
+                    {Object.values(Gender).map((gender) => (
+                      <SelectItem key={gender} value={gender}>
+                        {genderLabels[gender]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}

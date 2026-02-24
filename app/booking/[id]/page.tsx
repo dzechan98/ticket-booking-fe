@@ -13,6 +13,9 @@ import { Loader2, Calendar, Clock, MapPin, Film, Armchair } from "lucide-react";
 import { useShowtime } from "@/api/showtimes/detail";
 import { useShowtimeSeats } from "@/api/showtimes/seats";
 import { useCreateBooking } from "@/api/bookings/create";
+import { ScreenType } from "@/api/rooms/type";
+import { SeatType } from "@/api/seats/type";
+import { screenTypeLabels, seatTypeLabels } from "@/lib/utils/enum-labels";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import Image from "next/image";
@@ -66,10 +69,18 @@ export default function BookingPage() {
       },
       {
         onSuccess: (data) => {
-          toast.success(`Đặt vé thành công! Mã đặt vé: ${data.id}`, {
-            description: "Chúc bạn xem phim vui vẻ!",
-          });
-          router.push("/bookings");
+          if (data.payment_url) {
+            toast.success("Đang chuyển đến trang thanh toán...", {
+              description: `Mã đặt vé: ${data.id}`,
+            });
+            // Replace current URL to prevent going back
+            window.location.replace(data.payment_url);
+          } else {
+            toast.success(`Đặt vé thành công! Mã đặt vé: ${data.id}`, {
+              description: "Chúc bạn xem phim vui vẻ!",
+            });
+            router.push("/bookings");
+          }
         },
         onError: (error: any) => {
           toast.error("Đặt vé thất bại", {
@@ -196,7 +207,11 @@ export default function BookingPage() {
                       <span className="font-medium">Loại màn hình</span>
                     </div>
                     <p className="text-sm font-bold text-foreground">
-                      {showtime.room.screen_type}
+                      {
+                        screenTypeLabels[
+                          showtime.room.screen_type as ScreenType
+                        ]
+                      }
                     </p>
                   </div>
                 </div>
@@ -334,7 +349,11 @@ export default function BookingPage() {
                           {showtime.room.name}
                         </p>
                         <Badge variant="outline" className="text-xs">
-                          {showtime.room.screen_type}
+                          {
+                            screenTypeLabels[
+                              showtime.room.screen_type as ScreenType
+                            ]
+                          }
                         </Badge>
                       </div>
                     </div>
@@ -387,7 +406,8 @@ export default function BookingPage() {
                           >
                             <span className="text-muted-foreground">
                               Ghế {seat?.row}
-                              {seat?.column} ({seat?.type}):
+                              {seat?.column} (
+                              {seatTypeLabels[seat?.type as SeatType]}):
                             </span>
                             <span className="text-foreground font-semibold">
                               {seat?.final_price.toLocaleString()} đ

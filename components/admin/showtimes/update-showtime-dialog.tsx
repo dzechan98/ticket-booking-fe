@@ -40,7 +40,12 @@ import { CalendarIcon } from "lucide-react";
 import { useUpdateShowtime } from "@/api/showtimes/update";
 import { useListMovies } from "@/api/movies/list";
 import { useListRooms } from "@/api/rooms/list";
-import { Showtime } from "@/api/showtimes/type";
+import { Showtime, ShowtimeStatus } from "@/api/showtimes/type";
+import { ScreenType } from "@/api/rooms/type";
+import {
+  showtimeStatusLabels,
+  screenTypeLabels,
+} from "@/lib/utils/enum-labels";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -202,8 +207,9 @@ export function UpdateShowtimeDialog({
                     <SelectContent>
                       {roomsData?.items.map((room: any) => (
                         <SelectItem key={room.id} value={room.id}>
-                          {room.name} - {room.screen_type} ({room.total_seats}{" "}
-                          ghế)
+                          {room.name} -{" "}
+                          {screenTypeLabels[room.screen_type as ScreenType]} (
+                          {room.total_seats} ghế)
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -377,10 +383,11 @@ export function UpdateShowtimeDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="UPCOMING">Sắp chiếu</SelectItem>
-                      <SelectItem value="ONGOING">Đang chiếu</SelectItem>
-                      <SelectItem value="FINISHED">Đã chiếu</SelectItem>
-                      <SelectItem value="CANCELLED">Đã hủy</SelectItem>
+                      {Object.values(ShowtimeStatus).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {showtimeStatusLabels[status]}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

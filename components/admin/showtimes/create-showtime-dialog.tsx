@@ -40,6 +40,8 @@ import { CalendarIcon } from "lucide-react";
 import { useCreateShowtime } from "@/api/showtimes/create";
 import { useListMovies } from "@/api/movies/list";
 import { useListRooms } from "@/api/rooms/list";
+import { ScreenType } from "@/api/rooms/type";
+import { screenTypeLabels } from "@/lib/utils/enum-labels";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -187,8 +189,9 @@ export function CreateShowtimeDialog({
                     <SelectContent>
                       {roomsData?.items.map((room: any) => (
                         <SelectItem key={room.id} value={room.id}>
-                          {room.name} - {room.screen_type} ({room.total_seats}{" "}
-                          ghế)
+                          {room.name} -{" "}
+                          {screenTypeLabels[room.screen_type as ScreenType]} (
+                          {room.total_seats} ghế)
                         </SelectItem>
                       ))}
                     </SelectContent>

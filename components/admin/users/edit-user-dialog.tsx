@@ -42,6 +42,7 @@ import { toast } from "sonner";
 
 import { useUpdateProfile } from "@/api/users/update";
 import { Gender, UserResponse } from "@/api/users/type";
+import { genderLabels } from "@/lib/utils/enum-labels";
 
 interface Props {
   open: boolean;
@@ -135,9 +136,11 @@ export function EditUserDialog({ open, onOpenChange, user }: Props) {
                     <SelectValue placeholder="Chọn giới tính" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={Gender.MALE}>Nam</SelectItem>
-                    <SelectItem value={Gender.FEMALE}>Nữ</SelectItem>
-                    <SelectItem value={Gender.OTHER}>Khác</SelectItem>
+                    {Object.values(Gender).map((gender) => (
+                      <SelectItem key={gender} value={gender}>
+                        {genderLabels[gender]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}

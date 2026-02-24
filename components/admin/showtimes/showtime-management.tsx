@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { useShowtimes } from "@/api/showtimes/list";
-import { Showtime } from "@/api/showtimes/type";
+import { Showtime, ShowtimeStatus } from "@/api/showtimes/type";
+import { showtimeStatusLabels } from "@/lib/utils/enum-labels";
 import { CreateShowtimeDialog } from "./create-showtime-dialog";
 import { UpdateShowtimeDialog } from "./update-showtime-dialog";
 import { DeleteShowtimeDialog } from "./delete-showtime-dialog";
@@ -44,15 +45,26 @@ export function ShowtimeManagement() {
   };
 
   const getStatusBadge = (status: string) => {
+    const statusEnum = status as ShowtimeStatus;
     switch (status) {
       case "UPCOMING":
-        return <Badge variant="default">Sắp chiếu</Badge>;
+        return (
+          <Badge variant="default">{showtimeStatusLabels[statusEnum]}</Badge>
+        );
       case "ONGOING":
-        return <Badge variant="secondary">Đang chiếu</Badge>;
+        return (
+          <Badge variant="secondary">{showtimeStatusLabels[statusEnum]}</Badge>
+        );
       case "FINISHED":
-        return <Badge variant="outline">Đã chiếu</Badge>;
+        return (
+          <Badge variant="outline">{showtimeStatusLabels[statusEnum]}</Badge>
+        );
       case "CANCELLED":
-        return <Badge variant="destructive">Đã hủy</Badge>;
+        return (
+          <Badge variant="destructive">
+            {showtimeStatusLabels[statusEnum]}
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

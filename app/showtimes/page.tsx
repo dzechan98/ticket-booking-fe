@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Calendar, Film, Loader2 } from "lucide-react";
 import { useShowtimes } from "@/api/showtimes/list";
+import { ShowtimeStatus } from "@/api/showtimes/type";
+import { showtimeStatusLabels } from "@/lib/utils/enum-labels";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -196,9 +198,15 @@ export default function ShowtimesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-                    <SelectItem value="UPCOMING"> Sắp chiếu</SelectItem>
-                    <SelectItem value="ONGOING"> Đang chiếu</SelectItem>
-                    <SelectItem value="FINISHED"> Đã chiếu</SelectItem>
+                    {[
+                      ShowtimeStatus.UPCOMING,
+                      ShowtimeStatus.ONGOING,
+                      ShowtimeStatus.FINISHED,
+                    ].map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {showtimeStatusLabels[status]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

@@ -34,6 +34,7 @@ import {
 import { useListUsers } from "@/api/users/list";
 import { useDeleteUser } from "@/api/users/delete";
 import { UserResponse, Gender } from "@/api/users/type";
+import { genderLabels } from "@/lib/utils/enum-labels";
 import { EditUserDialog } from "@/components/admin/users/edit-user-dialog";
 import { CreateUserDialog } from "@/components/admin/users/create-user-dialog";
 import { BasePagination } from "@/components/common/base-pagination";
@@ -135,9 +136,7 @@ export default function AdminUsersPage() {
                 <TableCell>{user.email}</TableCell>
 
                 <TableCell>
-                  {user.gender === Gender.MALE && "Nam"}
-                  {user.gender === Gender.FEMALE && "Nữ"}
-                  {user.gender === Gender.OTHER && "Khác"}
+                  {user.gender ? genderLabels[user.gender] : "—"}
                 </TableCell>
 
                 <TableCell>

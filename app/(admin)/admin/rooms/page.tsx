@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { screenTypeLabels } from "@/lib/utils/enum-labels";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CreateRoomInput } from "@/lib/validations/room";
 import { useEffect, useState } from "react";
@@ -111,10 +112,11 @@ export default function AdminRoomsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value={ScreenType.STANDARD}>Tiêu chuẩn</SelectItem>
-            <SelectItem value={ScreenType.IMAX}>IMAX</SelectItem>
-            <SelectItem value={ScreenType.SCREEN_X}>ScreenX</SelectItem>
-            <SelectItem value={ScreenType.GOLD_CLASS}>Phòng VIP</SelectItem>
+            {Object.entries(screenTypeLabels).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
