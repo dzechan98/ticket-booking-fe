@@ -105,7 +105,6 @@ export function MovieForm({
         setIsUploadingPoster(true);
         try {
           posterUrl = await uploadImage(posterFile);
-          toast.success("Upload poster thành công!");
         } catch (error) {
           toast.error("Upload poster thất bại");
           throw error;

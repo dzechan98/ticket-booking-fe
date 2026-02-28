@@ -44,7 +44,6 @@ export function RoomForm({
     defaultValues: initialData || {
       name: "",
       screen_type: ScreenType.STANDARD,
-      total_seats: 100,
     },
   });
 
@@ -118,22 +117,55 @@ export function RoomForm({
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="total_seats" className="text-foreground">
-          Tổng số ghế <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="total_seats"
-          type="number"
-          placeholder="100"
-          className="border-border text-foreground placeholder:text-muted-foreground"
-          {...register("total_seats", { valueAsNumber: true })}
-        />
-        {errors.total_seats && (
-          <p className="text-sm text-destructive">
-            {errors.total_seats.message}
+      <div className="space-y-3 rounded-lg border border-border bg-muted/50 p-4">
+        <div className="space-y-1">
+          <Label className="text-foreground font-semibold">
+            Cấu hình ghế ngồi
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Phòng chiếu tự động có{" "}
+            <span className="font-semibold text-foreground">100 ghế</span> với
+            cấu hình:
           </p>
-        )}
+        </div>
+
+        <div className="space-y-2 text-sm">
+          <div className="flex items-start gap-2">
+            <span className="font-medium text-foreground min-w-30">
+              Sơ đồ ghế:
+            </span>
+            <span className="text-muted-foreground">
+              A1-A10, B1-B10, C1-C10, D1-D10, E1-E10, F1-F10, G1-G10, H1-H10,
+              I1-I10, J1-J10
+            </span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-medium text-foreground min-w-30">
+              Ghế thường:
+            </span>
+            <span className="text-muted-foreground">
+              80 ghế (A1-H10) - Giá cơ bản
+            </span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-medium text-foreground min-w-30">
+              Ghế VIP:
+            </span>
+            <span className="text-muted-foreground">
+              10 ghế (I1-I10) - Hệ số giá{" "}
+              <span className="font-semibold text-orange-600">1.5x</span>
+            </span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-medium text-foreground min-w-30">
+              Ghế Couple:
+            </span>
+            <span className="text-muted-foreground">
+              10 ghế (J1-J10) - Hệ số giá{" "}
+              <span className="font-semibold text-pink-600">2.0x</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       <Button

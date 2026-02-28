@@ -4,6 +4,7 @@ import type { MovieResponse } from "@/api/movies/type";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getEnumLabel } from "@/lib/utils/enum-labels";
 import { format, isToday, isTomorrow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar, Clock, Film, MapPin, Star } from "lucide-react";

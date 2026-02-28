@@ -3,7 +3,7 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MovieCard } from "@/components/movies/movie-card";
-import { useListMovies } from "@/api/movies/list";
+import { useListMoviesWithShowtimes } from "@/api/movies/list-with-showtimes";
 import { useListGenres } from "@/api/genres/list";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ export default function MoviesPage() {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data: moviesData, isLoading } = useListMovies({
+  const { data: moviesData, isLoading } = useListMoviesWithShowtimes({
     page,
     limit: 12,
     title: debouncedSearch || undefined,

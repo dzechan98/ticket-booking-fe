@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useListMovies } from "@/api/movies/list";
+import { useListMoviesWithShowtimes } from "@/api/movies/list-with-showtimes";
 import Link from "next/link";
 
 export function MovieSlider() {
   const [current, setCurrent] = useState(0);
-  const { data } = useListMovies({ page: 1, limit: 5 });
+  const { data } = useListMoviesWithShowtimes({ page: 1, limit: 5 });
   const sliderMovies = data?.items ?? [];
 
   const next = () =>

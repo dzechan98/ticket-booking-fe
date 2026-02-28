@@ -10,6 +10,7 @@ interface ShowtimeListParams {
   room_id?: string;
   status?: string;
   date?: string;
+  start_time?: string;
 }
 
 interface ShowtimeListResponse {

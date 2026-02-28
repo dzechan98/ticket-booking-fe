@@ -10,13 +10,11 @@ export enum ScreenType {
 export interface CreateRoomDto {
   name: string;
   screen_type: ScreenType;
-  total_seats: number;
 }
 
 export interface UpdateRoomDto {
   name?: string;
   screen_type?: ScreenType;
-  total_seats?: number;
 }
 
 export interface RoomResponse extends BaseResponse {

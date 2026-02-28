@@ -25,11 +25,6 @@ export const createRoomSchema = z.object({
     ScreenType.SCREEN_X,
     ScreenType.GOLD_CLASS,
   ]),
-  total_seats: z
-    .number()
-    .int()
-    .min(10, "Phòng phải có ít nhất 10 ghế")
-    .max(500, "Phòng không quá 500 ghế"),
 });
 
 export const updateRoomSchema = createRoomSchema;

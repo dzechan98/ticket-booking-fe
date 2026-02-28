@@ -45,26 +45,12 @@ export default function AdminRoomsPage() {
   }, [debouncedSearch, screenTypeFilter]);
 
   const handleCreate = async (data: CreateRoomInput) => {
-    try {
-      await createRoom(data);
-      toast.success("Tạo phòng chiếu thành công!");
-      setIsCreateDialogOpen(false);
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || "Không thể tạo phòng chiếu",
-      );
-    }
+    await createRoom(data);
+    setIsCreateDialogOpen(false);
   };
 
   const handleUpdate = async (id: string, data: CreateRoomInput) => {
-    try {
-      await updateRoom({ id, data });
-      toast.success("Cập nhật phòng chiếu thành công!");
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || "Không thể cập nhật phòng chiếu",
-      );
-    }
+    await updateRoom({ id, data });
   };
 
   const handleDelete = async (id: string) => {

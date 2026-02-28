@@ -214,7 +214,6 @@ export function RoomsList({
               initialData={{
                 name: selectedRoom.name,
                 screen_type: selectedRoom.screen_type,
-                total_seats: selectedRoom.total_seats,
               }}
               onSubmit={handleUpdateSubmit}
               isLoading={isUpdating}

@@ -198,15 +198,13 @@ export default function ShowtimesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-                    {[
-                      ShowtimeStatus.UPCOMING,
-                      ShowtimeStatus.ONGOING,
-                      ShowtimeStatus.FINISHED,
-                    ].map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {showtimeStatusLabels[status]}
-                      </SelectItem>
-                    ))}
+                    {[ShowtimeStatus.UPCOMING, ShowtimeStatus.ONGOING].map(
+                      (status) => (
+                        <SelectItem key={status} value={status}>
+                          {showtimeStatusLabels[status]}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </div>

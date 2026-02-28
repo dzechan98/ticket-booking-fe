@@ -5,12 +5,12 @@ import { Footer } from "@/components/layout/footer";
 import { Chatbot } from "@/components/chatbot/chatbot";
 import { MovieSlider } from "@/components/movies/movie-slider";
 import { MovieCard } from "@/components/movies/movie-card";
-import { useListMovies } from "@/api/movies/list";
+import { useListMoviesWithShowtimes } from "@/api/movies/list-with-showtimes";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 
 export default function HomePage() {
-  const { data, isLoading } = useListMovies({ page: 1, limit: 6 });
+  const { data, isLoading } = useListMoviesWithShowtimes({ page: 1, limit: 6 });
   const movies = data?.items ?? [];
 
   return (
