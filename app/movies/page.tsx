@@ -103,7 +103,7 @@ export default function MoviesPage() {
                     genres={movie.genres}
                     duration={movie.duration_minutes}
                     posterUrl={movie.poster_url}
-                    rating={movie.rating}
+                    avgRating={movie.avgRating}
                   />
                 ))}
               </div>

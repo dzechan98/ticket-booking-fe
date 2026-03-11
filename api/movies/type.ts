@@ -1,6 +1,7 @@
 import type { BaseResponse } from "@/types/common";
 import type { GenreResponse } from "../genres/type";
 import type { Showtime } from "../showtimes/type";
+import type { RatingResponse } from "../ratings/type";
 
 export interface CreateMovieDto {
   title: string;
@@ -10,7 +11,6 @@ export interface CreateMovieDto {
   poster_url?: string;
   trailer_url?: string;
   genreIds?: string[];
-  rating?: number;
 }
 
 export interface UpdateMovieDto {
@@ -21,7 +21,6 @@ export interface UpdateMovieDto {
   poster_url?: string;
   trailer_url?: string;
   genreIds?: string[];
-  rating?: number;
 }
 
 export interface MovieResponse extends BaseResponse {
@@ -32,6 +31,7 @@ export interface MovieResponse extends BaseResponse {
   poster_url: string | null;
   trailer_url: string | null;
   genres: GenreResponse[];
-  rating: number;
+  avgRating: number;
+  ratings?: RatingResponse[];
   showtimes?: Showtime[];
 }

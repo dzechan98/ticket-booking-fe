@@ -4,12 +4,12 @@ import type { MovieResponse } from "@/api/movies/type";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getEnumLabel } from "@/lib/utils/enum-labels";
 import { format, isToday, isTomorrow } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar, Clock, Film, MapPin, Star } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
+import { MovieRating } from "./movie-rating";
 
 interface MovieDetailsProps {
   movie: MovieResponse;
@@ -95,13 +95,13 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                 Chưa phân loại
               </Badge>
             )}
-            {movie.rating > 0 && (
+            {movie.avgRating > 0 && (
               <Badge
                 variant="secondary"
                 className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 px-3 py-1 flex items-center gap-1 text-xs font-bold shadow-md"
               >
                 <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
-                {movie.rating}/10
+                {movie.avgRating.toFixed(1)}/5
               </Badge>
             )}
           </div>
@@ -200,6 +200,13 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Movie Rating Section */}
+      <MovieRating
+        movieId={movie.id}
+        avgRating={movie.avgRating}
+        ratings={movie.ratings}
+      />
 
       {/* Description */}
       {movie.description && (

@@ -54,7 +54,7 @@ export default function HomePage() {
                   genres={movie.genres}
                   duration={movie.duration_minutes}
                   posterUrl={movie.poster_url}
-                  rating={movie.rating}
+                  avgRating={movie.avgRating}
                 />
               ))}
             </div>

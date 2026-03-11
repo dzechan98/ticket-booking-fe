@@ -69,7 +69,6 @@ export function MovieForm({
       poster_url: "",
       trailer_url: "",
       genreIds: [],
-      rating: 0,
     },
   });
 
@@ -173,26 +172,6 @@ export function MovieForm({
             <p className="text-sm text-destructive">
               {errors.duration_minutes.message}
             </p>
-          )}
-        </div>
-
-        {/* Rating */}
-        <div className="space-y-2">
-          <Label htmlFor="rating" className="text-foreground">
-            Đánh giá (0-10)
-          </Label>
-          <Input
-            id="rating"
-            type="number"
-            step="0.1"
-            min="0"
-            max="10"
-            placeholder="8.5"
-            className="border-border text-foreground placeholder:text-muted-foreground"
-            {...register("rating", { valueAsNumber: true })}
-          />
-          {errors.rating && (
-            <p className="text-sm text-destructive">{errors.rating.message}</p>
           )}
         </div>
 

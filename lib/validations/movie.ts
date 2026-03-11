@@ -14,11 +14,6 @@ export const createMovieSchema = z.object({
   poster_url: z.string().optional(),
   trailer_url: z.string().optional(),
   genreIds: z.array(z.string()).optional(),
-  rating: z
-    .number()
-    .min(0, "Đánh giá phải từ 0 đến 10")
-    .max(10, "Đánh giá phải từ 0 đến 10")
-    .optional(),
 });
 
 export type CreateMovieInput = z.infer<typeof createMovieSchema>;

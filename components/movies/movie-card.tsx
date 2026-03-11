@@ -10,7 +10,7 @@ interface MovieCardProps {
   genres: GenreResponse[];
   duration: number;
   posterUrl: string | null;
-  rating: number;
+  avgRating: number;
 }
 
 export function MovieCard({
@@ -19,7 +19,7 @@ export function MovieCard({
   genres,
   duration,
   posterUrl,
-  rating,
+  avgRating,
 }: MovieCardProps) {
   return (
     <div className="group overflow-hidden rounded-xl bg-card border border-border hover:border-primary transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
@@ -39,10 +39,12 @@ export function MovieCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Rating Badge */}
-        {rating > 0 && (
+        {avgRating > 0 && (
           <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg border border-yellow-400/30">
             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-white font-bold text-sm">{rating}</span>
+            <span className="text-white font-bold text-sm">
+              {avgRating.toFixed(1)}/5
+            </span>
           </div>
         )}
       </div>
