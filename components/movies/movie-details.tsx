@@ -33,6 +33,49 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
       );
   }, [movie.showtimes]);
 
+  const trailerEmbedUrl = useMemo(() => {
+    if (!movie.trailer_url) return null;
+
+    try {
+      const url = new URL(movie.trailer_url);
+
+      if (url.hostname.includes("youtu.be")) {
+        const videoId = url.pathname.replace("/", "");
+        return videoId
+          ? `https://www.youtube.com/embed/${videoId}${url.search}`
+          : null;
+      }
+
+      if (url.hostname.includes("youtube.com")) {
+        if (url.pathname === "/watch") {
+          const videoId = url.searchParams.get("v");
+          const params = new URLSearchParams(url.search);
+
+          params.delete("v");
+
+          return videoId
+            ? `https://www.youtube.com/embed/${videoId}${params.toString() ? `?${params.toString()}` : ""}`
+            : null;
+        }
+
+        if (url.pathname.startsWith("/embed/")) {
+          return url.toString();
+        }
+
+        if (url.pathname.startsWith("/shorts/")) {
+          const videoId = url.pathname.split("/")[2];
+          return videoId
+            ? `https://www.youtube.com/embed/${videoId}${url.search}`
+            : null;
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }, [movie.trailer_url]);
+
   const formatShowtimeDate = (dateString: string) => {
     const date = new Date(dateString);
     if (isToday(date)) return "Hôm nay";
@@ -236,28 +279,25 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           </CardHeader>
           <CardContent>
             <div className="aspect-video bg-secondary rounded-lg overflow-hidden shadow-md border border-border/50">
-              {movie.trailer_url.includes("youtube.com") ||
-              movie.trailer_url.includes("youtu.be") ? (
+              {trailerEmbedUrl ? (
                 <iframe
-                  src={movie.trailer_url
-                    .replace("watch?v=", "embed/")
-                    .replace("youtu.be/", "youtube.com/embed/")}
+                  src={trailerEmbedUrl}
+                  title={`${movie.title} trailer`}
                   className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <a
-                      href={movie.trailer_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Xem trailer tại đây
-                    </a>
-                  </div>
+                <div className="flex h-full items-center justify-center p-4 text-center">
+                  <a
+                    href={movie.trailer_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Mở trailer
+                  </a>
                 </div>
               )}
             </div>

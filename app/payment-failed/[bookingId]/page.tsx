@@ -1,27 +1,26 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  XCircle,
-  AlertTriangle,
-  RefreshCw,
-  Home,
-  HelpCircle,
-  Calendar,
-  Clock,
-  MapPin,
-  Loader2,
-} from "lucide-react";
 import { useMyBookingDetail } from "@/api/bookings/detail";
+import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import {
+  AlertTriangle,
+  Calendar,
+  Clock,
+  Home,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
 
 export default function PaymentFailedPage() {
   const params = useParams();
@@ -78,7 +77,7 @@ export default function PaymentFailedPage() {
           {/* Booking Info (if available) */}
           {booking && (
             <Card className="mb-6 shadow-lg border-red-200 dark:border-red-900">
-              <CardHeader className="bg-linear-to-r from-red-50 to-red-100/50 dark:from-red-950/50 dark:to-red-900/20 border-b">
+              <CardHeader className="border-b">
                 <CardTitle className="text-foreground flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
                   Thông tin đặt vé
@@ -167,14 +166,14 @@ export default function PaymentFailedPage() {
                     Ghế đã chọn
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {booking.tickets.map((ticket) => (
+                    {booking.selected_seats?.map((seat) => (
                       <Badge
-                        key={ticket.id}
+                        key={seat.id}
                         variant="secondary"
                         className="opacity-50"
                       >
-                        {ticket.seat.row}
-                        {ticket.seat.column}
+                        {seat.row}
+                        {seat.column}
                       </Badge>
                     ))}
                   </div>
@@ -193,42 +192,6 @@ export default function PaymentFailedPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Error Reasons Card */}
-          <Card className="mb-6 border-amber-200 dark:border-amber-900">
-            <CardHeader className="bg-amber-50 dark:bg-amber-950/20 border-b">
-              <CardTitle className="text-foreground text-base flex items-center gap-2">
-                <HelpCircle className="h-5 w-5 text-amber-600" />
-                Các nguyên nhân có thể
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 mt-0.5">•</span>
-                  <span>
-                    Số dư tài khoản không đủ hoặc vượt quá giới hạn giao dịch
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 mt-0.5">•</span>
-                  <span>Thông tin thẻ không chính xác hoặc đã hết hạn</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 mt-0.5">•</span>
-                  <span>Hết thời gian thanh toán (vượt quá 5 phút)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 mt-0.5">•</span>
-                  <span>Người dùng hủy giao dịch trên cổng thanh toán</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 mt-0.5">•</span>
-                  <span>Lỗi kết nối hoặc lỗi hệ thống ngân hàng</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
 
           {/* Action Buttons */}
           <div className="space-y-4">
@@ -251,16 +214,6 @@ export default function PaymentFailedPage() {
                 Về trang chủ
               </Button>
             </div>
-
-            {booking && (
-              <Button
-                onClick={() => router.push("/bookings")}
-                variant="ghost"
-                className="w-full"
-              >
-                Xem lịch sử đặt vé
-              </Button>
-            )}
           </div>
         </section>
       </main>

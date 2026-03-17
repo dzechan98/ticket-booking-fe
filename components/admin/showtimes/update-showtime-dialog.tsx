@@ -50,27 +50,48 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
-const showtimeSchema = z
-  .object({
-    movie_id: z.string().optional(),
-    room_id: z.string().optional(),
-    start_time: z.string().optional(),
-    end_time: z.string().optional(),
-    base_price: z.number().min(0, "Giá vé phải lớn hơn 0").optional(),
-    status: z.enum(["UPCOMING", "ONGOING", "FINISHED", "CANCELLED"]).optional(),
-  })
-  .refine(
-    (data) => {
-      if (!data.start_time || !data.end_time) return true;
-      return new Date(data.start_time) <= new Date(data.end_time);
-    },
-    {
-      message: "Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc",
-      path: ["end_time"],
-    },
-  );
+const PREPARATION_BUFFER_MINUTES = 15;
 
-type ShowtimeFormData = z.infer<typeof showtimeSchema>;
+const createUpdateShowtimeSchema = (minDurationMinutes?: number) =>
+  z
+    .object({
+      movie_id: z.string().optional(),
+      room_id: z.string().optional(),
+      start_time: z.string().optional(),
+      end_time: z.string().optional(),
+      base_price: z.number().min(0, "Giá vé phải lớn hơn 0").optional(),
+      status: z
+        .enum(["UPCOMING", "ONGOING", "FINISHED", "CANCELLED"])
+        .optional(),
+    })
+    .refine(
+      (data) => {
+        if (!data.start_time || !data.end_time) return true;
+        return new Date(data.start_time) < new Date(data.end_time);
+      },
+      {
+        message: "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc",
+        path: ["end_time"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.start_time || !data.end_time || !minDurationMinutes)
+          return true;
+        const diffMs =
+          new Date(data.end_time).getTime() -
+          new Date(data.start_time).getTime();
+        const diffMinutes = diffMs / 60000;
+        return diffMinutes >= minDurationMinutes + PREPARATION_BUFFER_MINUTES;
+      },
+      {
+        message:
+          "Thời lượng suất chiếu phải đủ thời lượng phim và thời gian chuẩn bị",
+        path: ["end_time"],
+      },
+    );
+
+type ShowtimeFormData = z.infer<ReturnType<typeof createUpdateShowtimeSchema>>;
 
 interface UpdateShowtimeDialogProps {
   open: boolean;
@@ -92,6 +113,18 @@ export function UpdateShowtimeDialog({
   const [startTime, setStartTime] = React.useState("09:00");
   const [endTime, setEndTime] = React.useState("11:00");
 
+  const [selectedMovieId, setSelectedMovieId] = React.useState<string>("");
+
+  const selectedMovie = React.useMemo(
+    () => moviesData?.items.find((m: any) => m.id === selectedMovieId),
+    [moviesData, selectedMovieId],
+  );
+
+  const minDurationMinutes = selectedMovie?.duration_minutes;
+  const requiredMinutes = minDurationMinutes
+    ? minDurationMinutes + PREPARATION_BUFFER_MINUTES
+    : undefined;
+
   // Initialize dates when showtime changes
   React.useEffect(() => {
     if (showtime) {
@@ -101,11 +134,12 @@ export function UpdateShowtimeDialog({
       setEndDate(end);
       setStartTime(format(start, "HH:mm"));
       setEndTime(format(end, "HH:mm"));
+      setSelectedMovieId(showtime.movie.id);
     }
   }, [showtime]);
 
   const form = useForm<ShowtimeFormData>({
-    resolver: zodResolver(showtimeSchema),
+    resolver: zodResolver(createUpdateShowtimeSchema(minDurationMinutes)),
     values: showtime
       ? {
           movie_id: showtime.movie.id,
@@ -120,6 +154,11 @@ export function UpdateShowtimeDialog({
         }
       : undefined,
   });
+
+  // Re-validate end_time khi thay đổi phim
+  React.useEffect(() => {
+    form.trigger("end_time");
+  }, [minDurationMinutes, form]);
 
   const onSubmit = (data: ShowtimeFormData) => {
     if (!showtime) return;
@@ -168,7 +207,10 @@ export function UpdateShowtimeDialog({
                 <FormItem>
                   <FormLabel>Phim</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(val) => {
+                      field.onChange(val);
+                      setSelectedMovieId(val);
+                    }}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -184,6 +226,16 @@ export function UpdateShowtimeDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  {requiredMinutes && (
+                    <p className="text-sm text-muted-foreground">
+                      Vui lòng chọn thời lượng suất chiếu tối thiểu{" "}
+                      <span className="font-medium text-foreground">
+                        {requiredMinutes} phút
+                      </span>{" "}
+                      ({minDurationMinutes} phút phim +{" "}
+                      {PREPARATION_BUFFER_MINUTES} phút chuẩn bị)
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -265,18 +317,23 @@ export function UpdateShowtimeDialog({
                     </Popover>
                     <Input
                       type="time"
-                      step="1"
+                      step="60"
                       value={startTime}
                       onChange={(e) => {
                         setStartTime(e.target.value);
                         if (startDate) {
                           const [hours, minutes] = e.target.value.split(":");
                           const newDate = new Date(startDate);
-                          newDate.setHours(parseInt(hours), parseInt(minutes));
+                          newDate.setHours(
+                            parseInt(hours),
+                            parseInt(minutes),
+                            0,
+                            0,
+                          );
                           field.onChange(newDate.toISOString());
                         }
                       }}
-                      className="mt-2 bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      className="mt-2 bg-background"
                     />
                     <FormMessage />
                   </FormItem>
@@ -328,18 +385,23 @@ export function UpdateShowtimeDialog({
                     </Popover>
                     <Input
                       type="time"
-                      step="1"
+                      step="60"
                       value={endTime}
                       onChange={(e) => {
                         setEndTime(e.target.value);
                         if (endDate) {
                           const [hours, minutes] = e.target.value.split(":");
                           const newDate = new Date(endDate);
-                          newDate.setHours(parseInt(hours), parseInt(minutes));
+                          newDate.setHours(
+                            parseInt(hours),
+                            parseInt(minutes),
+                            0,
+                            0,
+                          );
                           field.onChange(newDate.toISOString());
                         }
                       }}
-                      className="mt-2 bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      className="mt-2 bg-background"
                     />
                     <FormMessage />
                   </FormItem>

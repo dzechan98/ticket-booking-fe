@@ -10,31 +10,49 @@ import {
 import { useRevenueChart } from "@/api/dashboard/revenue-chart";
 import type { ChartPeriodType } from "@/api/dashboard/type";
 import {
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { Bar, ComposedChart, XAxis, YAxis, CartesianGrid } from "recharts";
 
 interface RevenueChartProps {
   period?: ChartPeriodType;
-  days?: number;
+  startDate?: string;
+  endDate?: string;
+  rangeLabel?: string;
 }
 
-export function RevenueChart({ period = "day", days = 7 }: RevenueChartProps) {
-  const { data, isLoading, error } = useRevenueChart({ period, days });
+const chartConfig = {
+  revenue: {
+    label: "Doanh thu",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
+export function RevenueChart({
+  period = "day",
+  startDate,
+  endDate,
+  rangeLabel,
+}: RevenueChartProps) {
+  const { data, isLoading, error } = useRevenueChart({
+    period,
+    startDate,
+    endDate,
+  });
 
   if (isLoading) {
     return (
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Biểu đồ doanh thu</CardTitle>
-          <CardDescription>7 ngày gần nhất</CardDescription>
+          <CardDescription>
+            {rangeLabel ?? "Khoảng thời gian đã chọn"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-75 flex items-center justify-center">
@@ -50,7 +68,9 @@ export function RevenueChart({ period = "day", days = 7 }: RevenueChartProps) {
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Biểu đồ doanh thu</CardTitle>
-          <CardDescription>7 ngày gần nhất</CardDescription>
+          <CardDescription>
+            {rangeLabel ?? "Khoảng thời gian đã chọn"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-75 flex items-center justify-center">
@@ -61,27 +81,44 @@ export function RevenueChart({ period = "day", days = 7 }: RevenueChartProps) {
     );
   }
 
-  const chartData = data.data.map((item) => {
-    const date = new Date(item.date);
-    return {
-      date: `${date.getDate()}/${date.getMonth() + 1}`,
-      "Doanh thu (VNĐ)": item.revenue,
-      "Số vé": item.tickets,
-      revenue: item.revenue,
-      tickets: item.tickets,
-    };
-  });
+  const chartData = data.data.map((item) => ({
+    date: item.date,
+    revenue: item.revenue,
+    tickets: item.tickets,
+  }));
+
+  if (chartData.length === 0) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground">Biểu đồ doanh thu</CardTitle>
+          <CardDescription>
+            {rangeLabel ?? "Khoảng thời gian đã chọn"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-75 flex items-center justify-center">
+            <p className="text-muted-foreground">
+              Không có dữ liệu trong khoảng thời gian đã chọn
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-card border-border">
       <CardHeader>
         <CardTitle className="text-foreground">Biểu đồ doanh thu</CardTitle>
-        <CardDescription>7 ngày gần nhất</CardDescription>
+        <CardDescription>
+          {rangeLabel ?? "Khoảng thời gian đã chọn"}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-87.5">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
+          <ChartContainer config={chartConfig} className="h-full w-full">
+            <ComposedChart accessibilityLayer data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="date"
@@ -100,52 +137,43 @@ export function RevenueChart({ period = "day", days = 7 }: RevenueChartProps) {
                   style: { fill: "hsl(var(--muted-foreground))", fontSize: 12 },
                 }}
               />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                className="text-xs"
-                tick={{ fill: "hsl(var(--muted-foreground))" }}
-                label={{
-                  value: "Số vé",
-                  angle: 90,
-                  position: "insideRight",
-                  style: { fill: "hsl(var(--muted-foreground))", fontSize: 12 },
-                }}
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name, item) => {
+                      if (name === "Doanh thu") {
+                        const tickets = Number(
+                          (item?.payload as { tickets?: number })?.tickets ?? 0,
+                        );
+
+                        return [
+                          <div key="value" className="space-y-0.5">
+                            <div>
+                              {Number(value).toLocaleString("vi-VN")} VNĐ
+                            </div>
+                            <div className="text-muted-foreground">
+                              Số vé: {tickets}
+                            </div>
+                          </div>,
+                          name,
+                        ];
+                      }
+
+                      return [<span key="value">{String(value)}</span>, name];
+                    }}
+                  />
+                }
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "6px",
-                }}
-                labelStyle={{ color: "hsl(var(--popover-foreground))" }}
-                formatter={(value: any, name: string) => {
-                  if (name === "Doanh thu (VNĐ)") {
-                    return [
-                      Number(value).toLocaleString("vi-VN") + " VNĐ",
-                      name,
-                    ];
-                  }
-                  return [value, name];
-                }}
-              />
-              <Legend />
+              <ChartLegend content={<ChartLegendContent />} />
               <Bar
                 yAxisId="left"
-                dataKey="Doanh thu (VNĐ)"
-                fill="hsl(var(--primary))"
+                dataKey="revenue"
+                name="Doanh thu"
+                fill="var(--color-revenue)"
                 radius={[8, 8, 0, 0]}
               />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="Số vé"
-                stroke="hsl(var(--chart-2))"
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--chart-2))", r: 4 }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+            </ComposedChart>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

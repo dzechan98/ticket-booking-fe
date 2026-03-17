@@ -1,13 +1,42 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { addDays, format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import type { DateRange } from "react-day-picker";
+
 import { StatCard } from "@/components/admin/stat-card";
 import { RevenueChart } from "@/components/admin/revenue-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useOverviewStats } from "@/api/dashboard/overview";
 import { useTopMovies } from "@/api/dashboard/top-movies";
+import type { ChartPeriodType } from "@/api/dashboard/type";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 export function DashboardOverview() {
+  const today = useMemo(() => new Date(), []);
+  const [chartPeriod, setChartPeriod] = useState<ChartPeriodType>("day");
+  const [chartRange, setChartRange] = useState<DateRange | undefined>({
+    from: addDays(today, -29),
+    to: today,
+  });
+
   const { data: overviewData, isLoading: isLoadingOverview } =
     useOverviewStats();
   const { data: topMoviesData, isLoading: isLoadingTopMovies } = useTopMovies({
@@ -24,6 +53,25 @@ export function DashboardOverview() {
   const formatNumber = (value: number) => {
     return value.toLocaleString("vi-VN");
   };
+
+  const chartQueryRange = useMemo(() => {
+    if (!chartRange?.from || !chartRange?.to) {
+      return {
+        startDate: format(addDays(today, -29), "yyyy-MM-dd"),
+        endDate: format(today, "yyyy-MM-dd"),
+      };
+    }
+
+    return {
+      startDate: format(chartRange.from, "yyyy-MM-dd"),
+      endDate: format(chartRange.to, "yyyy-MM-dd"),
+    };
+  }, [chartRange, today]);
+
+  const rangeText =
+    chartRange?.from && chartRange?.to
+      ? `${format(chartRange.from, "dd/MM/yyyy", { locale: vi })} - ${format(chartRange.to, "dd/MM/yyyy", { locale: vi })}`
+      : "Chọn khoảng thời gian";
 
   return (
     <div className="space-y-8">
@@ -84,7 +132,67 @@ export function DashboardOverview() {
       </div>
 
       {/* Revenue Chart */}
-      <RevenueChart period="day" days={7} />
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Khoảng thời gian doanh thu
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Dữ liệu được lọc theo khoảng ngày bạn chọn
+            </p>
+          </div>
+
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Select
+              value={chartPeriod}
+              onValueChange={(value) =>
+                setChartPeriod(value as ChartPeriodType)
+              }
+            >
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue placeholder="Chọn period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="day">Ngày</SelectItem>
+                <SelectItem value="week">Tuần</SelectItem>
+                <SelectItem value="month">Tháng</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal sm:w-72.5",
+                    !chartRange?.from && "text-muted-foreground",
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {rangeText}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  selected={chartRange}
+                  onSelect={setChartRange}
+                  numberOfMonths={2}
+                  disabled={(date) => date > today}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        <RevenueChart
+          period={chartPeriod}
+          startDate={chartQueryRange.startDate}
+          endDate={chartQueryRange.endDate}
+          rangeLabel={rangeText}
+        />
+      </div>
 
       {/* Top Movies */}
       <Card className="bg-card border-border">
@@ -115,7 +223,7 @@ export function DashboardOverview() {
                     </div>
                     <div className="relative w-16 h-20 rounded overflow-hidden shrink-0">
                       <Image
-                        src={movie.posterUrl}
+                        src={movie.posterUrl ?? ""}
                         alt={movie.title}
                         fill
                         className="object-cover"

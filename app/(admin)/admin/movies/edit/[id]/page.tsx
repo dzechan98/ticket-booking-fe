@@ -78,7 +78,6 @@ export default function EditMoviePage() {
               poster_url: movie.poster_url || "",
               trailer_url: movie.trailer_url || "",
               genreIds: movie.genres?.map((g) => g.id) || [],
-              rating: movie.rating,
             }}
             onSubmit={handleUpdate}
             isLoading={isPending}

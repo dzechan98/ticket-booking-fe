@@ -1,18 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Star, Armchair, Calendar } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
 import { Showtime } from "@/api/showtimes/type";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   screenTypeLabels,
   showtimeStatusLabels,
-  showtimeStatusIcons,
 } from "@/lib/utils/enum-labels";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { Armchair, Calendar, Clock, MapPin, Star } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface ShowtimeCardProps {
   showtime: Showtime;
@@ -24,6 +23,8 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
 
   const isDisabled =
     showtime.status === "FINISHED" || showtime.status === "CANCELLED";
+
+  const router = useRouter();
 
   return (
     <div className="group bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all duration-300">
@@ -52,7 +53,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
                   <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-md">
                     <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                     <span className="font-bold text-sm text-foreground">
-                      {showtime.movie.rating}
+                      {showtime.movie.avgRating}
                     </span>
                     <span className="text-xs text-muted-foreground">/10</span>
                   </div>
@@ -150,24 +151,22 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
               }
               className="text-sm px-3 py-1"
             >
-              {showtimeStatusIcons[showtime.status]}{" "}
               {showtimeStatusLabels[showtime.status]}
             </Badge>
 
-            <Link href={`/booking/${showtime.id}`}>
-              <Button
-                size="lg"
-                disabled={isDisabled}
-                className={`${
-                  !isDisabled
-                    ? "bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                    : ""
-                } transition-all duration-200 px-8`}
-              >
-                <Armchair className="h-4 w-4 mr-2" />
-                <span className="font-semibold">Đặt vé ngay</span>
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              disabled={isDisabled}
+              className={`${
+                !isDisabled
+                  ? "bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  : ""
+              } transition-all duration-200 px-8`}
+              onClick={() => router.push(`/booking/${showtime.id}`)}
+            >
+              <Armchair className="h-4 w-4 mr-2" />
+              <span className="font-semibold">Đặt vé ngay</span>
+            </Button>
           </div>
         </div>
       </div>

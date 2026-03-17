@@ -8,19 +8,20 @@ const URL = "/dashboard/revenue-chart";
 
 interface RevenueChartParams {
   period?: ChartPeriodType;
-  days?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const useRevenueChart = (params: RevenueChartParams = {}) => {
-  const { period = "day", days = 7 } = params;
+  const { period = "day", startDate, endDate } = params;
 
   return useQuery({
-    queryKey: DASHBOARD_KEYS.revenueChart(period, days),
+    queryKey: DASHBOARD_KEYS.revenueChart(period, startDate, endDate),
     queryFn: async () => {
       const response = await instance.get<ApiResponse<RevenueChartData[]>>(
         URL,
         {
-          params: { period, days },
+          params: { period, startDate, endDate },
         },
       );
       return response.data;

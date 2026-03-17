@@ -216,15 +216,6 @@ export default function PaymentSuccessPage() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => window.print()}
-              variant="outline"
-              size="lg"
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              In vé
-            </Button>
-            <Button
               onClick={() => router.push("/bookings")}
               size="lg"
               className="gap-2"

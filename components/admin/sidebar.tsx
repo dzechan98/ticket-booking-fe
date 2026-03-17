@@ -31,7 +31,7 @@ const adminMenuItems = [
   { label: "Quản lý phim", href: "/admin/movies", icon: Film },
   { label: "Quản lý thể loại", href: "/admin/genres", icon: Tags },
   { label: "Quản lý người dùng", href: "/admin/users", icon: Users },
-  { label: "Quản lý vé", href: "/admin/tickets", icon: Ticket },
+  { label: "Quản lý booking", href: "/admin/bookings", icon: Ticket },
   { label: "Quản lý phòng chiếu", href: "/admin/rooms", icon: Box },
   { label: "Quản lý suất chiếu", href: "/admin/showtimes", icon: Clock },
 ];

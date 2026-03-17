@@ -1,4 +1,7 @@
+import { SeatResponse } from "@/api/seats/type";
 import type { BaseResponse } from "@/types/common";
+
+export type BookingStatus = "pending" | "paid" | "expired" | "cancelled";
 
 export interface CreateBookingDto {
   showtime_id: string;
@@ -12,10 +15,11 @@ export interface UpdateBookingDto {
 }
 
 export interface BookingResponse extends BaseResponse {
-  status: "pending" | "paid" | "expired" | "cancelled";
+  status: BookingStatus;
   transaction_ref: string;
   payment_url?: string;
   vnpay_response_code?: string;
+  seat_ids?: string[];
   user: {
     id: string;
     email: string;
@@ -49,4 +53,5 @@ export interface BookingResponse extends BaseResponse {
   }[];
   total_price: number;
   paid_at: Date | null;
+  selected_seats?: SeatResponse[];
 }

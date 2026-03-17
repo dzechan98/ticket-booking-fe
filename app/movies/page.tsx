@@ -17,6 +17,7 @@ import {
 import { BasePagination } from "@/components/common/base-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEffect, useState } from "react";
+import { useListMovies } from "@/api/movies/list";
 
 export default function MoviesPage() {
   const [page, setPage] = useState(1);
@@ -25,7 +26,7 @@ export default function MoviesPage() {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data: moviesData, isLoading } = useListMoviesWithShowtimes({
+  const { data: moviesData, isLoading } = useListMovies({
     page,
     limit: 12,
     title: debouncedSearch || undefined,
