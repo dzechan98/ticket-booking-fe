@@ -78,6 +78,8 @@ export function MoviesList({
                     <TableHead>Tên phim</TableHead>
                     <TableHead>Thể loại</TableHead>
                     <TableHead>Thời lượng</TableHead>
+                    <TableHead>Quốc gia</TableHead>
+                    <TableHead>Năm SX</TableHead>
                     <TableHead>Ngày phát hành</TableHead>
                     <TableHead>Đánh giá</TableHead>
                     <TableHead className="text-right">Hành động</TableHead>
@@ -116,6 +118,14 @@ export function MoviesList({
 
                       <TableCell className="text-muted-foreground">
                         {movie.duration_minutes} phút
+                      </TableCell>
+
+                      <TableCell className="text-muted-foreground">
+                        {movie.country || "Chưa có"}
+                      </TableCell>
+
+                      <TableCell className="text-muted-foreground">
+                        {movie.production_year || "Chưa có"}
                       </TableCell>
 
                       <TableCell className="text-muted-foreground">

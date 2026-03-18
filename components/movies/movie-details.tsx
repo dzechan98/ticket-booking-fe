@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, isToday, isTomorrow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Calendar, Clock, Film, MapPin, Star } from "lucide-react";
+import { Calendar, Clock, Film, Globe, MapPin, Star } from "lucide-react";
+import { screenTypeLabels } from "@/lib/utils/enum-labels";
 import Link from "next/link";
 import { useMemo } from "react";
 import { MovieRating } from "./movie-rating";
@@ -17,21 +18,6 @@ interface MovieDetailsProps {
 
 export function MovieDetails({ movie }: MovieDetailsProps) {
   // Filter and sort showtimes - only show from now onwards
-  const upcomingShowtimes = useMemo(() => {
-    if (!movie.showtimes) return [];
-
-    const now = new Date();
-
-    return movie.showtimes
-      .filter((showtime) => {
-        const showtimeDate = new Date(showtime.start_time);
-        return showtimeDate.getTime() >= now.getTime(); // So sánh theo thời gian chính xác
-      })
-      .sort(
-        (a, b) =>
-          new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
-      );
-  }, [movie.showtimes]);
 
   const trailerEmbedUrl = useMemo(() => {
     if (!movie.trailer_url) return null;
@@ -168,6 +154,26 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
               </span>
               <span className="text-sm">{movie.duration_minutes} phút</span>
             </div>
+            <div className="flex items-center gap-2.5 group">
+              <div className="p-1.5 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Globe className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-semibold text-foreground text-sm">
+                Quốc gia:
+              </span>
+              <span className="text-sm">{movie.country || "Chưa công bố"}</span>
+            </div>
+            <div className="flex items-center gap-2.5 group">
+              <div className="p-1.5 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Film className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-semibold text-foreground text-sm">
+                Năm sản xuất:
+              </span>
+              <span className="text-sm">
+                {movie.production_year || "Chưa công bố"}
+              </span>
+            </div>
             {movie.genres && movie.genres.length > 0 && (
               <div className="flex items-center gap-2.5 group">
                 <div className="p-1.5 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
@@ -194,9 +200,9 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {upcomingShowtimes.length > 0 ? (
+          {movie.showtimes && movie.showtimes.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {upcomingShowtimes.map((showtime) => (
+              {movie.showtimes.map((showtime) => (
                 <Button
                   key={showtime.id}
                   asChild
@@ -220,7 +226,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                       variant="secondary"
                       className="text-[10px] mt-1 px-1.5 py-0"
                     >
-                      {showtime.room.screen_type}
+                      {screenTypeLabels[showtime.room.screen_type]}
                     </Badge>
                   </Link>
                 </Button>

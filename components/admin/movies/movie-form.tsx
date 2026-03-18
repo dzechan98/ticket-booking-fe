@@ -65,6 +65,8 @@ export function MovieForm({
       title: "",
       description: "",
       duration_minutes: 90,
+      country: "",
+      production_year: undefined,
       release_date: "",
       poster_url: "",
       trailer_url: "",
@@ -171,6 +173,47 @@ export function MovieForm({
           {errors.duration_minutes && (
             <p className="text-sm text-destructive">
               {errors.duration_minutes.message}
+            </p>
+          )}
+        </div>
+
+        {/* Country */}
+        <div className="space-y-2">
+          <Label htmlFor="country" className="text-foreground">
+            Quốc gia
+          </Label>
+          <Input
+            id="country"
+            type="text"
+            placeholder="Ví dụ: Việt Nam"
+            className="border-border text-foreground placeholder:text-muted-foreground"
+            {...register("country")}
+          />
+          {errors.country && (
+            <p className="text-sm text-destructive">{errors.country.message}</p>
+          )}
+        </div>
+
+        {/* Production Year */}
+        <div className="space-y-2">
+          <Label htmlFor="production_year" className="text-foreground">
+            Năm sản xuất
+          </Label>
+          <Input
+            id="production_year"
+            type="number"
+            placeholder="2025"
+            className="border-border text-foreground placeholder:text-muted-foreground"
+            {...register("production_year", {
+              setValueAs: (value) =>
+                value === "" || value === null || value === undefined
+                  ? undefined
+                  : Number(value),
+            })}
+          />
+          {errors.production_year && (
+            <p className="text-sm text-destructive">
+              {errors.production_year.message}
             </p>
           )}
         </div>

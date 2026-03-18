@@ -11,6 +11,8 @@ interface MovieCardProps {
   duration: number;
   posterUrl: string | null;
   avgRating: number;
+  country?: string | null;
+  productionYear?: number | null;
 }
 
 export function MovieCard({
@@ -20,6 +22,8 @@ export function MovieCard({
   duration,
   posterUrl,
   avgRating,
+  country,
+  productionYear,
 }: MovieCardProps) {
   return (
     <div className="group overflow-hidden rounded-xl bg-card border border-border hover:border-primary transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
@@ -80,6 +84,22 @@ export function MovieCard({
           >
             {duration} phút
           </Badge>
+          {productionYear && (
+            <Badge
+              variant="secondary"
+              className="text-xs bg-secondary text-secondary-foreground"
+            >
+              {productionYear}
+            </Badge>
+          )}
+          {country && (
+            <Badge
+              variant="secondary"
+              className="text-xs bg-secondary text-secondary-foreground"
+            >
+              {country}
+            </Badge>
+          )}
         </div>
 
         <Button

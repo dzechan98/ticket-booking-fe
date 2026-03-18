@@ -3,7 +3,6 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MovieCard } from "@/components/movies/movie-card";
-import { useListMoviesWithShowtimes } from "@/api/movies/list-with-showtimes";
 import { useListGenres } from "@/api/genres/list";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
@@ -105,6 +104,8 @@ export default function MoviesPage() {
                     duration={movie.duration_minutes}
                     posterUrl={movie.poster_url}
                     avgRating={movie.avgRating}
+                    country={movie.country}
+                    productionYear={movie.production_year}
                   />
                 ))}
               </div>

@@ -74,6 +74,8 @@ export default function EditMoviePage() {
               title: movie.title,
               description: movie.description || "",
               duration_minutes: movie.duration_minutes,
+              country: movie.country || "",
+              production_year: movie.production_year || undefined,
               release_date: movie.release_date || "",
               poster_url: movie.poster_url || "",
               trailer_url: movie.trailer_url || "",

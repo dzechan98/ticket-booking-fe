@@ -7,6 +7,8 @@ export interface CreateMovieDto {
   title: string;
   description?: string;
   duration_minutes: number;
+  country?: string;
+  production_year?: number;
   release_date?: string;
   poster_url?: string;
   trailer_url?: string;
@@ -17,6 +19,8 @@ export interface UpdateMovieDto {
   title?: string;
   description?: string;
   duration_minutes?: number;
+  country?: string;
+  production_year?: number;
   release_date?: string;
   poster_url?: string;
   trailer_url?: string;
@@ -27,6 +31,8 @@ export interface MovieResponse extends BaseResponse {
   title: string;
   description: string | null;
   duration_minutes: number;
+  country: string | null;
+  production_year: number | null;
   release_date: string | null;
   poster_url: string | null;
   trailer_url: string | null;
