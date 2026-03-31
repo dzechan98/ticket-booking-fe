@@ -9,14 +9,15 @@ import {
   ArrowLeft,
   Calendar,
   Clock,
+  Download,
   Loader2,
   MapPin,
   Ticket,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 import { useMyBookingDetail } from "@/api/bookings/detail";
 import type { BookingStatus } from "@/api/bookings/type";
-import { useTickets } from "@/api/tickets/list";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { Badge } from "@/components/ui/badge";
@@ -43,39 +44,37 @@ export default function BookingTicketDetailPage() {
   const params = useParams();
   const bookingId = params.id as string;
 
+  const handleDownloadQr = (ticketId: string) => {
+    const qrSvg = document.getElementById(
+      `ticket-qr-${ticketId}`,
+    ) as SVGSVGElement | null;
+
+    if (!qrSvg) return;
+
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(qrSvg);
+    const blob = new Blob([svgString], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `qr-ticket-${ticketId}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const {
     data: booking,
     isLoading: isBookingLoading,
     error: bookingError,
   } = useMyBookingDetail(bookingId);
 
-  const shouldLoadTickets = booking?.status === "paid";
-  const {
-    data: ticketsData,
-    isLoading: isTicketsLoading,
-    error: ticketsError,
-  } = useTickets({
-    booking_id: shouldLoadTickets ? bookingId : undefined,
-    page: 1,
-    limit: 100,
-  });
-
   const displayedSeats = useMemo(() => {
     if (!booking) return [] as string[];
-
-    if (booking.status === "paid") {
-      if (ticketsData?.items?.length) {
-        return ticketsData.items.map(
-          (ticket) => `${ticket.seat.row}${ticket.seat.column}`,
-        );
-      }
-
-      if (booking.tickets?.length) {
-        return booking.tickets.map(
-          (ticket) => `${ticket.seat.row}${ticket.seat.column}`,
-        );
-      }
-    }
 
     if (booking.selected_seats?.length) {
       return booking.selected_seats.map((seat) => `${seat.row}${seat.column}`);
@@ -88,35 +87,32 @@ export default function BookingTicketDetailPage() {
     }
 
     return [];
-  }, [booking, ticketsData]);
+  }, [booking]);
 
   const displayedTickets = useMemo(() => {
     if (!booking) return [];
 
-    if (ticketsData?.items?.length) {
-      return ticketsData.items.map((ticket) => ({
-        id: ticket.id,
-        seatLabel: `${ticket.seat.row}${ticket.seat.column}`,
-        price: ticket.price,
-        qrCode: ticket.qr_code,
-        usedAt: ticket.used_at,
-        createdAt: ticket.created_at,
-      }));
-    }
-
     if (booking.tickets?.length) {
-      return booking.tickets.map((ticket) => ({
-        id: ticket.id,
-        seatLabel: `${ticket.seat.row}${ticket.seat.column}`,
-        price: ticket.price,
-        qrCode: ticket.qr_code,
-        usedAt: ticket.used_at,
-        createdAt: booking.created_at,
-      }));
+      return booking.tickets.map((ticket) => {
+        // Support both used_at and usedAt payload shapes.
+        const usedAt =
+          (ticket as unknown as { used_at?: string | Date | null }).used_at ??
+          (ticket as unknown as { usedAt?: string | Date | null }).usedAt ??
+          null;
+
+        return {
+          id: ticket.id,
+          seatLabel: `${ticket.seat.row}${ticket.seat.column}`,
+          price: ticket.price,
+          qrCode: ticket.qr_code,
+          usedAt,
+          createdAt: booking.created_at,
+        };
+      });
     }
 
     return [];
-  }, [booking, ticketsData]);
+  }, [booking]);
 
   if (isBookingLoading) {
     return (
@@ -246,12 +242,7 @@ export default function BookingTicketDetailPage() {
                   Ghế
                 </h3>
 
-                {isTicketsLoading && shouldLoadTickets ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Đang tải vé từ ticket API...
-                  </div>
-                ) : displayedSeats.length > 0 ? (
+                {displayedSeats.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {displayedSeats.map((seat) => (
                       <Badge
@@ -266,13 +257,6 @@ export default function BookingTicketDetailPage() {
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     Booking hiện chưa có ticket hoặc chưa có dữ liệu ghế.
-                  </p>
-                )}
-
-                {shouldLoadTickets && !!ticketsError && (
-                  <p className="text-xs text-muted-foreground">
-                    Không thể tải ticket API, đã dùng dữ liệu fallback từ
-                    booking detail.
                   </p>
                 )}
               </div>
@@ -304,12 +288,32 @@ export default function BookingTicketDetailPage() {
                           </div>
 
                           <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-                            <p className="text-muted-foreground">
-                              Mã QR:{" "}
-                              <span className="font-medium text-foreground">
-                                {ticket.qrCode}
-                              </span>
-                            </p>
+                            <div className="sm:col-span-2">
+                              <p className="mb-2 text-muted-foreground">
+                                Mã QR:
+                              </p>
+                              <div className="flex items-center gap-4 rounded-md border border-border p-3">
+                                <div className="rounded-md bg-white p-2">
+                                  <QRCodeSVG
+                                    id={`ticket-qr-${ticket.id}`}
+                                    value={ticket.qrCode}
+                                    size={96}
+                                    level="M"
+                                    includeMargin={false}
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                  onClick={() => handleDownloadQr(ticket.id)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                  Tải QR
+                                </Button>
+                              </div>
+                            </div>
                             <p className="text-muted-foreground">
                               Giá vé:{" "}
                               <span className="font-medium text-foreground">

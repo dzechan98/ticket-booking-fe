@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/hooks/use-auth";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Chatbot } from "@/components/chatbot/chatbot";
@@ -8,10 +9,28 @@ import { MovieCard } from "@/components/movies/movie-card";
 import { useListMoviesWithShowtimes } from "@/api/movies/list-with-showtimes";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user, hydrated } = useAuth();
   const { data, isLoading } = useListMoviesWithShowtimes({ page: 1, limit: 6 });
   const movies = data?.items ?? [];
+
+  useEffect(() => {
+    if (hydrated && user?.is_admin) {
+      router.replace("/admin");
+    }
+  }, [hydrated, router, user?.is_admin]);
+
+  if (hydrated && user?.is_admin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Spinner className="h-10 w-10" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

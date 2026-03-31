@@ -55,7 +55,7 @@ export function ShowtimeCard({ showtime }: ShowtimeCardProps) {
                     <span className="font-bold text-sm text-foreground">
                       {showtime.movie.avgRating}
                     </span>
-                    <span className="text-xs text-muted-foreground">/10</span>
+                    <span className="text-xs text-muted-foreground">/5</span>
                   </div>
 
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">

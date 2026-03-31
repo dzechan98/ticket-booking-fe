@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   chatWithBot,
   getChatSuggestions,
@@ -67,7 +69,7 @@ export function Chatbot() {
       message: string;
       history: ChatMessage[];
     }) => chatWithBot(message, history),
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       const botMessage: Message = {
         id: Date.now().toString(),
         content: data.response,
@@ -164,6 +166,20 @@ export function Chatbot() {
     }
   };
 
+  const renderMessageContent = (message: Message) => {
+    if (message.role === "model") {
+      return (
+        <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-ul:pl-5 prose-li:my-1 prose-strong:font-semibold prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {message.content}
+          </ReactMarkdown>
+        </div>
+      );
+    }
+
+    return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
+  };
+
   if (!isOpen) {
     return (
       <button
@@ -250,7 +266,7 @@ export function Chatbot() {
                 )}
                 <div
                   className={cn(
-                    "max-w-[70%] rounded-lg p-3 shadow-sm",
+                    "max-w-[78%] rounded-lg p-3 shadow-sm",
                     message.role === "user"
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                       : "bg-white text-gray-800 border",
@@ -270,9 +286,7 @@ export function Chatbot() {
                     </div>
                   ) : (
                     <>
-                      <p className="text-sm whitespace-pre-wrap">
-                        {message.content}
-                      </p>
+                      {renderMessageContent(message)}
                       <span className="text-xs opacity-70 mt-1 block">
                         {message.timestamp.toLocaleTimeString("vi-VN", {
                           hour: "2-digit",

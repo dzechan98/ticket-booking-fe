@@ -11,7 +11,6 @@ export const useAuth = () => {
 
   const logout = async () => {
     setUser(null);
-    setUser(null);
     router.push("/login");
     localStorage.removeItem("accessToken");
   };

@@ -40,8 +40,9 @@ import { CalendarIcon } from "lucide-react";
 import { useCreateShowtime } from "@/api/showtimes/create";
 import { useListMovies } from "@/api/movies/list";
 import { useListRooms } from "@/api/rooms/list";
+import { ShowtimeStatus } from "@/api/showtimes/type";
 import { ScreenType } from "@/api/rooms/type";
-import { screenTypeLabels } from "@/lib/utils/enum-labels";
+import { screenTypeLabels, showtimeStatusLabels } from "@/lib/utils/enum-labels";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -70,6 +71,7 @@ const createShowtimeSchema = (
       start_time: z.string().min(1, "Vui lòng chọn thời gian bắt đầu"),
       end_time: z.string().min(1, "Vui lòng chọn thời gian kết thúc"),
       base_price: z.number().min(0, "Giá vé phải lớn hơn 0"),
+      status: z.enum(["UPCOMING", "ONGOING", "FINISHED", "CANCELLED"]),
     })
     .refine(
       (data) => {
@@ -148,6 +150,7 @@ export function CreateShowtimeDialog({
       start_time: "",
       end_time: "",
       base_price: 150000,
+      status: ShowtimeStatus.UPCOMING,
     },
   });
 
@@ -174,7 +177,14 @@ export function CreateShowtimeDialog({
       const now = getCurrentDateTime();
       const defaultEndTime = new Date(now.getTime() + 2 * 60 * 60000);
 
-      form.reset();
+      form.reset({
+        movie_id: "",
+        room_id: "",
+        start_time: "",
+        end_time: "",
+        base_price: 150000,
+        status: ShowtimeStatus.UPCOMING,
+      });
       setCurrentDateTime(now);
       setStartDate(undefined);
       setEndDate(undefined);
@@ -472,6 +482,34 @@ export function CreateShowtimeDialog({
                       }
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Trạng thái</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn trạng thái" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(ShowtimeStatus).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {showtimeStatusLabels[status]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
