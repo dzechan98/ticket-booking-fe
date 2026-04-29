@@ -33,16 +33,6 @@ export const showtimeStatusLabels: Record<ShowtimeStatus, string> = {
 };
 
 /**
- * Showtime Status Icons
- */
-export const showtimeStatusIcons: Record<ShowtimeStatus, string> = {
-  [ShowtimeStatus.UPCOMING]: "🔜",
-  [ShowtimeStatus.ONGOING]: "▶️",
-  [ShowtimeStatus.FINISHED]: "✅",
-  [ShowtimeStatus.CANCELLED]: "❌",
-};
-
-/**
  * Gender Labels (Giới tính)
  */
 export const genderLabels: Record<Gender, string> = {

@@ -207,9 +207,13 @@ export function ProfileForm() {
               name="dob"
               control={control}
               render={({ field }) => {
-                const dateValue = field.value
+                const parsedDate = field.value
                   ? new Date(field.value)
                   : undefined;
+                const dateValue =
+                  parsedDate && !Number.isNaN(parsedDate.getTime())
+                    ? parsedDate
+                    : undefined;
 
                 return (
                   <>
@@ -232,6 +236,9 @@ export function ProfileForm() {
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
+                          captionLayout="dropdown-years"
+                          fromYear={1900}
+                          toYear={new Date().getFullYear()}
                           selected={dateValue}
                           onSelect={(date) =>
                             field.onChange(

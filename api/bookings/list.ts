@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import instance from "../instance";
 import { BOOKINGS_KEYS } from "./key";
-import type { BookingResponse } from "./type";
+import type { BookingResponse, BookingStatus } from "./type";
 import type { ApiResponse, PaginatedResponse } from "@/types/common";
 
 const URL = "/bookings";
@@ -9,14 +9,15 @@ const URL = "/bookings";
 interface ListBookingsParams {
   page?: number;
   limit?: number;
+  status?: BookingStatus;
 }
 
 // Admin: Get all bookings
 export const useListBookings = (params: ListBookingsParams = {}) => {
-  const { page = 1, limit = 10 } = params;
+  const { page = 1, limit = 10, status } = params;
 
   return useQuery({
-    queryKey: BOOKINGS_KEYS.list({ page, limit }),
+    queryKey: BOOKINGS_KEYS.list({ page, limit, status }),
     queryFn: async () => {
       const response = await instance.get<
         ApiResponse<PaginatedResponse<BookingResponse>>
@@ -24,6 +25,7 @@ export const useListBookings = (params: ListBookingsParams = {}) => {
         params: {
           page,
           limit,
+          ...(status ? { status } : {}),
         },
       });
 

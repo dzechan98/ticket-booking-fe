@@ -1,6 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, CreditCard, Copy, CheckCircle2 } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  CreditCard,
+  Copy,
+  CheckCircle2,
+  Eye,
+} from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface BookingCardProps {
   movieTitle: string;
@@ -11,6 +19,7 @@ interface BookingCardProps {
   paymentMethod?: string;
   paymentTime?: string;
   bookingCode?: string;
+  bookingId: string;
 }
 
 export function BookingCard({
@@ -22,8 +31,10 @@ export function BookingCard({
   paymentMethod,
   paymentTime,
   bookingCode,
+  bookingId,
 }: BookingCardProps) {
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
 
   const handleCopyCode = () => {
     if (bookingCode) {
@@ -77,7 +88,7 @@ export function BookingCard({
 
           <div className="space-y-2">
             <div className="flex items-start gap-2">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
               <div>
                 <p className="text-xs font-medium text-foreground">
                   {showtime}
@@ -86,7 +97,7 @@ export function BookingCard({
             </div>
 
             <div className="flex items-start gap-2">
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
               <div className="flex flex-wrap gap-1">
                 {seats.map((seat) => (
                   <span
@@ -101,7 +112,7 @@ export function BookingCard({
 
             {paymentMethod && (
               <div className="flex items-start gap-2">
-                <CreditCard className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <CreditCard className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                 <div>
                   <p className="font-medium text-foreground text-xs">
                     {paymentMethod}
@@ -129,6 +140,16 @@ export function BookingCard({
             </p>
             <p className="text-xs text-muted-foreground">{seats.length} vé</p>
           </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => router.push(`/bookings/${bookingId}`)}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Chi tiết
+          </Button>
         </div>
       </div>
     </div>

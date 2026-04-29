@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -12,10 +12,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { useShowtimes } from "@/api/showtimes/list";
 import { Showtime, ShowtimeStatus } from "@/api/showtimes/type";
-import { showtimeStatusLabels } from "@/lib/utils/enum-labels";
+import {
+  screenTypeLabels,
+  showtimeStatusLabels,
+} from "@/lib/utils/enum-labels";
+import { ScreenType } from "@/api/rooms/type";
 import { CreateShowtimeDialog } from "./create-showtime-dialog";
 import { UpdateShowtimeDialog } from "./update-showtime-dialog";
 import { DeleteShowtimeDialog } from "./delete-showtime-dialog";
@@ -25,6 +37,10 @@ import { vi } from "date-fns/locale";
 
 export function ShowtimeManagement() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | ShowtimeStatus>(
+    "ALL",
+  );
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -32,7 +48,22 @@ export function ShowtimeManagement() {
     null,
   );
 
-  const { data, isLoading } = useShowtimes({ page: currentPage, limit: 10 });
+  const { data, isLoading } = useShowtimes({
+    page: currentPage,
+    limit: 10,
+    status: statusFilter === "ALL" ? undefined : statusFilter,
+  });
+
+  const filteredItems = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return data?.items ?? [];
+
+    return (data?.items ?? []).filter((showtime) => {
+      const movieTitle = showtime.movie.title.toLowerCase();
+      const roomName = showtime.room.name.toLowerCase();
+      return movieTitle.includes(keyword) || roomName.includes(keyword);
+    });
+  }, [data?.items, search]);
 
   const handleEdit = (showtime: Showtime) => {
     setSelectedShowtime(showtime);
@@ -97,6 +128,34 @@ export function ShowtimeManagement() {
         </CardHeader>
 
         <CardContent>
+          <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm theo tên phim hoặc phòng chiếu"
+              className="md:col-span-2"
+            />
+            <Select
+              value={statusFilter}
+              onValueChange={(value: "ALL" | ShowtimeStatus) => {
+                setStatusFilter(value);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Lọc theo trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                {Object.values(ShowtimeStatus).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {showtimeStatusLabels[status]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -116,14 +175,14 @@ export function ShowtimeManagement() {
                     Đang tải...
                   </TableCell>
                 </TableRow>
-              ) : data?.items.length === 0 ? (
+              ) : filteredItems.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
-                    Chưa có suất chiếu nào
+                    Không tìm thấy suất chiếu phù hợp
                   </TableCell>
                 </TableRow>
               ) : (
-                data?.items.map((showtime) => (
+                filteredItems.map((showtime) => (
                   <TableRow key={showtime.id}>
                     <TableCell className="font-medium">
                       {showtime.movie.title}
@@ -131,7 +190,11 @@ export function ShowtimeManagement() {
                     <TableCell>
                       {showtime.room.name}
                       <div className="text-xs text-muted-foreground">
-                        {showtime.room.screen_type}
+                        {
+                          screenTypeLabels[
+                            showtime.room.screen_type as ScreenType
+                          ]
+                        }
                       </div>
                     </TableCell>
                     <TableCell>

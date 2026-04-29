@@ -40,32 +40,77 @@ import { CalendarIcon } from "lucide-react";
 import { useCreateShowtime } from "@/api/showtimes/create";
 import { useListMovies } from "@/api/movies/list";
 import { useListRooms } from "@/api/rooms/list";
+import { ShowtimeStatus } from "@/api/showtimes/type";
 import { ScreenType } from "@/api/rooms/type";
-import { screenTypeLabels } from "@/lib/utils/enum-labels";
+import { screenTypeLabels, showtimeStatusLabels } from "@/lib/utils/enum-labels";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
-const showtimeSchema = z
-  .object({
-    movie_id: z.string().min(1, "Vui lòng chọn phim"),
-    room_id: z.string().min(1, "Vui lòng chọn phòng chiếu"),
-    start_time: z.string().min(1, "Vui lòng chọn thời gian bắt đầu"),
-    end_time: z.string().min(1, "Vui lòng chọn thời gian kết thúc"),
-    base_price: z.number().min(0, "Giá vé phải lớn hơn 0"),
-  })
-  .refine(
-    (data) => {
-      if (!data.start_time || !data.end_time) return true;
-      return new Date(data.start_time) <= new Date(data.end_time);
-    },
-    {
-      message: "Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc",
-      path: ["end_time"],
-    },
-  );
+const PREPARATION_BUFFER_MINUTES = 15;
 
-type ShowtimeFormData = z.infer<typeof showtimeSchema>;
+const getCurrentDateTime = () => {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  return now;
+};
+
+const isSameLocalDate = (left: Date, right: Date) =>
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth() &&
+  left.getDate() === right.getDate();
+
+const createShowtimeSchema = (
+  minDurationMinutes?: number,
+  minStartDateTime?: Date,
+) =>
+  z
+    .object({
+      movie_id: z.string().min(1, "Vui lòng chọn phim"),
+      room_id: z.string().min(1, "Vui lòng chọn phòng chiếu"),
+      start_time: z.string().min(1, "Vui lòng chọn thời gian bắt đầu"),
+      end_time: z.string().min(1, "Vui lòng chọn thời gian kết thúc"),
+      base_price: z.number().min(0, "Giá vé phải lớn hơn 0"),
+      status: z.enum(["UPCOMING", "ONGOING", "FINISHED", "CANCELLED"]),
+    })
+    .refine(
+      (data) => {
+        if (!data.start_time || !minStartDateTime) return true;
+        return new Date(data.start_time) >= minStartDateTime;
+      },
+      {
+        message: "Thời gian bắt đầu phải từ thời điểm hiện tại trở đi",
+        path: ["start_time"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.start_time || !data.end_time) return true;
+        return new Date(data.start_time) < new Date(data.end_time);
+      },
+      {
+        message: "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc",
+        path: ["end_time"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.start_time || !data.end_time || !minDurationMinutes)
+          return true;
+        const diffMs =
+          new Date(data.end_time).getTime() -
+          new Date(data.start_time).getTime();
+        const diffMinutes = diffMs / 60000;
+        return diffMinutes >= minDurationMinutes + PREPARATION_BUFFER_MINUTES;
+      },
+      {
+        message:
+          "Thời lượng suất chiếu phải đủ thời lượng phim và thời gian chuẩn bị",
+        path: ["end_time"],
+      },
+    );
+
+type ShowtimeFormData = z.infer<ReturnType<typeof createShowtimeSchema>>;
 
 interface CreateShowtimeDialogProps {
   open: boolean;
@@ -80,32 +125,79 @@ export function CreateShowtimeDialog({
   const { data: moviesData } = useListMovies({ page: 1, limit: 100 });
   const { data: roomsData } = useListRooms({ page: 1, limit: 100 });
 
+  const [selectedMovieId, setSelectedMovieId] = React.useState<string>("");
+
+  const selectedMovie = React.useMemo(
+    () => moviesData?.items.find((m: any) => m.id === selectedMovieId),
+    [moviesData, selectedMovieId],
+  );
+
+  const minDurationMinutes = selectedMovie?.duration_minutes;
+  const requiredMinutes = minDurationMinutes
+    ? minDurationMinutes + PREPARATION_BUFFER_MINUTES
+    : undefined;
+  const [currentDateTime, setCurrentDateTime] = React.useState<Date>(() =>
+    getCurrentDateTime(),
+  );
+
   const form = useForm<ShowtimeFormData>({
-    resolver: zodResolver(showtimeSchema),
+    resolver: zodResolver(
+      createShowtimeSchema(minDurationMinutes, currentDateTime),
+    ),
     defaultValues: {
       movie_id: "",
       room_id: "",
       start_time: "",
       end_time: "",
       base_price: 150000,
+      status: ShowtimeStatus.UPCOMING,
     },
   });
 
   const [startDate, setStartDate] = React.useState<Date>();
   const [endDate, setEndDate] = React.useState<Date>();
-  const [startTime, setStartTime] = React.useState("09:00");
-  const [endTime, setEndTime] = React.useState("11:00");
+  const [startTime, setStartTime] = React.useState(() =>
+    format(getCurrentDateTime(), "HH:mm"),
+  );
+  const [endTime, setEndTime] = React.useState(() => {
+    const defaultEndTime = new Date(
+      getCurrentDateTime().getTime() + 2 * 60 * 60000,
+    );
+    return format(defaultEndTime, "HH:mm");
+  });
+
+  const minStartTime =
+    startDate && isSameLocalDate(startDate, currentDateTime)
+      ? format(currentDateTime, "HH:mm")
+      : undefined;
 
   // Reset form khi dialog được mở
   React.useEffect(() => {
     if (open) {
-      form.reset();
+      const now = getCurrentDateTime();
+      const defaultEndTime = new Date(now.getTime() + 2 * 60 * 60000);
+
+      form.reset({
+        movie_id: "",
+        room_id: "",
+        start_time: "",
+        end_time: "",
+        base_price: 150000,
+        status: ShowtimeStatus.UPCOMING,
+      });
+      setCurrentDateTime(now);
       setStartDate(undefined);
       setEndDate(undefined);
-      setStartTime("09:00");
-      setEndTime("11:00");
+      setStartTime(format(now, "HH:mm"));
+      setEndTime(format(defaultEndTime, "HH:mm"));
+      setSelectedMovieId("");
     }
   }, [open, form]);
+
+  // Re-validate end_time khi thay đổi phim
+  React.useEffect(() => {
+    form.trigger("end_time");
+  }, [minDurationMinutes, form]);
 
   const onSubmit = (data: ShowtimeFormData) => {
     createShowtime(
@@ -122,6 +214,7 @@ export function CreateShowtimeDialog({
           setEndDate(undefined);
           setStartTime("09:00");
           setEndTime("11:00");
+          setSelectedMovieId("");
           onOpenChange(false);
         },
         onError: (error: any) => {
@@ -150,7 +243,10 @@ export function CreateShowtimeDialog({
                 <FormItem>
                   <FormLabel>Phim</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(val) => {
+                      field.onChange(val);
+                      setSelectedMovieId(val);
+                    }}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -166,6 +262,16 @@ export function CreateShowtimeDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  {requiredMinutes && (
+                    <p className="text-sm text-muted-foreground">
+                      Vui lòng chọn thời lượng suất chiếu tối thiểu{" "}
+                      <span className="font-medium text-foreground">
+                        {requiredMinutes} phút
+                      </span>{" "}
+                      ({minDurationMinutes} phút phim +{" "}
+                      {PREPARATION_BUFFER_MINUTES} phút chuẩn bị)
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -234,9 +340,21 @@ export function CreateShowtimeDialog({
                           onSelect={(date) => {
                             setStartDate(date);
                             if (date) {
-                              const [hours, minutes] = startTime.split(":");
-                              date.setHours(parseInt(hours), parseInt(minutes));
-                              field.onChange(date.toISOString());
+                              const nextDate = new Date(date);
+                              const nextTime =
+                                isSameLocalDate(nextDate, currentDateTime) &&
+                                startTime < format(currentDateTime, "HH:mm")
+                                  ? format(currentDateTime, "HH:mm")
+                                  : startTime;
+                              const [hours, minutes] = nextTime.split(":");
+                              nextDate.setHours(
+                                parseInt(hours),
+                                parseInt(minutes),
+                                0,
+                                0,
+                              );
+                              setStartTime(nextTime);
+                              field.onChange(nextDate.toISOString());
                             }
                           }}
                           disabled={(date) =>
@@ -248,18 +366,24 @@ export function CreateShowtimeDialog({
                     </Popover>
                     <Input
                       type="time"
-                      step="1"
+                      step="60"
+                      min={minStartTime}
                       value={startTime}
                       onChange={(e) => {
                         setStartTime(e.target.value);
                         if (startDate) {
                           const [hours, minutes] = e.target.value.split(":");
                           const newDate = new Date(startDate);
-                          newDate.setHours(parseInt(hours), parseInt(minutes));
+                          newDate.setHours(
+                            parseInt(hours),
+                            parseInt(minutes),
+                            0,
+                            0,
+                          );
                           field.onChange(newDate.toISOString());
                         }
                       }}
-                      className="mt-2 bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      className="mt-2 bg-background"
                     />
                     <FormMessage />
                   </FormItem>
@@ -299,8 +423,14 @@ export function CreateShowtimeDialog({
                             setEndDate(date);
                             if (date) {
                               const [hours, minutes] = endTime.split(":");
-                              date.setHours(parseInt(hours), parseInt(minutes));
-                              field.onChange(date.toISOString());
+                              const nextDate = new Date(date);
+                              nextDate.setHours(
+                                parseInt(hours),
+                                parseInt(minutes),
+                                0,
+                                0,
+                              );
+                              field.onChange(nextDate.toISOString());
                             }
                           }}
                           disabled={(date) =>
@@ -312,18 +442,23 @@ export function CreateShowtimeDialog({
                     </Popover>
                     <Input
                       type="time"
-                      step="1"
+                      step="60"
                       value={endTime}
                       onChange={(e) => {
                         setEndTime(e.target.value);
                         if (endDate) {
                           const [hours, minutes] = e.target.value.split(":");
                           const newDate = new Date(endDate);
-                          newDate.setHours(parseInt(hours), parseInt(minutes));
+                          newDate.setHours(
+                            parseInt(hours),
+                            parseInt(minutes),
+                            0,
+                            0,
+                          );
                           field.onChange(newDate.toISOString());
                         }
                       }}
-                      className="mt-2 bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      className="mt-2 bg-background"
                     />
                     <FormMessage />
                   </FormItem>
@@ -347,6 +482,34 @@ export function CreateShowtimeDialog({
                       }
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Trạng thái</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn trạng thái" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(ShowtimeStatus).map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {showtimeStatusLabels[status]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

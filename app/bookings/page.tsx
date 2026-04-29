@@ -50,14 +50,16 @@ export default function BookingsPage() {
                   Lịch sử đặt vé
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Tất cả các vé đã thanh toán của bạn
+                  Tất cả các booking của bạn
                 </p>
               </div>
               <div className="bg-primary/10 px-4 py-2 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Ticket className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Tổng vé</p>
+                    <p className="text-xs text-muted-foreground">
+                      Tổng booking
+                    </p>
                     <p className="text-xl font-bold text-primary">
                       {data?.total || 0}
                     </p>
@@ -73,7 +75,7 @@ export default function BookingsPage() {
               <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Tìm kiếm theo tên phim hoặc mã vé..."
+                placeholder="Tìm kiếm theo tên phim..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 text-sm"
@@ -87,7 +89,7 @@ export default function BookingsPage() {
               <div className="text-center space-y-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
                 <p className="text-muted-foreground">
-                  Đang tải danh sách vé...
+                  Đang tải danh sách booking...
                 </p>
               </div>
             </div>
@@ -97,7 +99,7 @@ export default function BookingsPage() {
           {error && (
             <div className="text-center py-12">
               <p className="text-destructive text-lg">
-                Có lỗi xảy ra khi tải danh sách vé
+                Có lỗi xảy ra khi tải danh sách booking
               </p>
             </div>
           )}
@@ -110,6 +112,7 @@ export default function BookingsPage() {
                   {filteredBookings.map((booking) => (
                     <BookingCard
                       key={booking.id}
+                      bookingId={booking.id}
                       movieTitle={booking.showtime.movie.title}
                       showtime={`${format(new Date(booking.showtime.start_time), "dd/MM/yyyy - HH:mm", { locale: vi })} - ${booking.showtime.room.name}`}
                       seats={booking.tickets.map(
@@ -118,11 +121,15 @@ export default function BookingsPage() {
                       totalPrice={booking.total_price}
                       posterUrl={booking.showtime.movie.poster_url || ""}
                       paymentMethod="Thanh toán online"
-                      paymentTime={format(
-                        new Date(booking.paid_at),
-                        "dd/MM/yyyy - HH:mm",
-                        { locale: vi },
-                      )}
+                      paymentTime={
+                        booking.paid_at
+                          ? format(
+                              new Date(booking.paid_at),
+                              "dd/MM/yyyy - HH:mm",
+                              { locale: vi },
+                            )
+                          : undefined
+                      }
                       bookingCode={booking.transaction_ref}
                     />
                   ))}
@@ -130,7 +137,7 @@ export default function BookingsPage() {
               ) : (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground text-lg">
-                    Không có vé nào
+                    Không có booking nào
                   </p>
                 </div>
               )}

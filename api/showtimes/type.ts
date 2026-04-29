@@ -40,6 +40,7 @@ export interface CreateShowtimeDto {
   start_time: string;
   end_time: string;
   base_price: number;
+  status?: ShowtimeStatus;
 }
 
 export interface UpdateShowtimeDto {

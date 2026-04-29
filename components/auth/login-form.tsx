@@ -46,9 +46,10 @@ export function LoginForm() {
 
       if (userResult.data?.is_admin) {
         toast.success("Đăng nhập thành công");
-        router.push("/admin");
+        router.replace("/admin");
       } else {
-        router.push("/");
+        toast.success("Đăng nhập thành công");
+        router.replace("/");
       }
     } catch (error) {
       toast.error(getError(error));

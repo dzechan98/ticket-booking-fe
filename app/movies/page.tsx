@@ -3,7 +3,6 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MovieCard } from "@/components/movies/movie-card";
-import { useListMoviesWithShowtimes } from "@/api/movies/list-with-showtimes";
 import { useListGenres } from "@/api/genres/list";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
@@ -17,6 +16,7 @@ import {
 import { BasePagination } from "@/components/common/base-pagination";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEffect, useState } from "react";
+import { useListMovies } from "@/api/movies/list";
 
 export default function MoviesPage() {
   const [page, setPage] = useState(1);
@@ -25,7 +25,7 @@ export default function MoviesPage() {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data: moviesData, isLoading } = useListMoviesWithShowtimes({
+  const { data: moviesData, isLoading } = useListMovies({
     page,
     limit: 12,
     title: debouncedSearch || undefined,
@@ -103,7 +103,9 @@ export default function MoviesPage() {
                     genres={movie.genres}
                     duration={movie.duration_minutes}
                     posterUrl={movie.poster_url}
-                    rating={movie.rating}
+                    avgRating={movie.avgRating}
+                    country={movie.country}
+                    productionYear={movie.production_year}
                   />
                 ))}
               </div>

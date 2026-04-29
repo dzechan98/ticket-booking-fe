@@ -1,18 +1,35 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, MessageCircle, Minimize2 } from "lucide-react";
+import {
+  X,
+  Send,
+  MessageCircle,
+  Minimize2,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  chatWithBot,
+  getChatSuggestions,
+  resetChatConversation,
+} from "@/api/chatbot/chat";
+import type { ChatMessage } from "@/api/chatbot/type";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
   content: string;
-  sender: "user" | "bot";
+  role: "user" | "model";
   timestamp: Date;
 }
 
@@ -23,14 +40,79 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "Xin chào! Tôi có thể giúp gì cho bạn về việc đặt vé xem phim?",
-      sender: "bot",
+      content:
+        "Xin chào! Tôi là trợ lý ảo của hệ thống đặt vé xem phim CineHub. Tôi có thể giúp gì cho bạn về việc đặt vé xem phim? 🎬",
+      role: "model",
       timestamp: new Date(),
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<ChatMessage[]>(
+    [],
+  );
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch suggestions
+  const { data: suggestions = [] } = useQuery({
+    queryKey: ["chatbot-suggestions"],
+    queryFn: getChatSuggestions,
+    staleTime: Infinity,
+  });
+
+  // Chat mutation
+  const chatMutation = useMutation({
+    mutationFn: ({
+      message,
+      history,
+    }: {
+      message: string;
+      history: ChatMessage[];
+    }) => chatWithBot(message, history),
+    onSuccess: (data) => {
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        content: data.response,
+        role: "model",
+        timestamp: new Date(),
+      };
+      // Remove typing indicator and add bot message
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== "typing"),
+        botMessage,
+      ]);
+      setConversationHistory(data.conversationHistory);
+      setShowSuggestions(false);
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.message || "Có lỗi xảy ra khi gửi tin nhắn",
+      );
+      // Remove the loading message if error occurs
+      setMessages((prev) => prev.filter((m) => m.id !== "typing"));
+    },
+  });
+
+  // Reset mutation
+  const resetMutation = useMutation({
+    mutationFn: resetChatConversation,
+    onSuccess: (message) => {
+      setMessages([
+        {
+          id: "1",
+          content: message,
+          role: "model",
+          timestamp: new Date(),
+        },
+      ]);
+      setConversationHistory([]);
+      setShowSuggestions(true);
+      toast.success("Đã reset cuộc trò chuyện");
+    },
+    onError: () => {
+      toast.error("Có lỗi xảy ra khi reset cuộc trò chuyện");
+    },
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,69 +122,41 @@ export function Chatbot() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputMessage;
+    if (!textToSend.trim()) return;
 
     const userMessage: Message = {
-      id: new Date().toUTCString().toString(),
-      content: inputMessage,
-      sender: "user",
+      id: new Date().toISOString(),
+      content: textToSend,
+      role: "user",
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
-    setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = getBotResponse(inputMessage);
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: botResponse,
-        sender: "bot",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 1000);
+    // Show typing indicator
+    const typingMessage: Message = {
+      id: "typing",
+      content: "",
+      role: "model",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, typingMessage]);
+
+    chatMutation.mutate({
+      message: textToSend,
+      history: conversationHistory,
+    });
   };
 
-  const getBotResponse = (message: string): string => {
-    const lowerMessage = message.toLowerCase();
+  const handleReset = () => {
+    resetMutation.mutate();
+  };
 
-    if (lowerMessage.includes("giá") || lowerMessage.includes("vé")) {
-      return "Giá vé phim từ 45.000đ - 120.000đ tùy theo suất chiếu và loại ghế. Bạn có thể xem chi tiết giá khi chọn phim và suất chiếu nhé!";
-    } else if (lowerMessage.includes("đặt") || lowerMessage.includes("book")) {
-      return "Để đặt vé, bạn chọn phim muốn xem, sau đó chọn suất chiếu và ghế. Bạn cần đăng nhập để hoàn tất đặt vé nhé!";
-    } else if (lowerMessage.includes("thanh toán")) {
-      return "Chúng tôi chấp nhận thanh toán qua thẻ ATM, thẻ tín dụng, ví điện tử (MoMo, ZaloPay). Bạn có thể chọn phương thức thanh toán phù hợp khi đặt vé.";
-    } else if (lowerMessage.includes("hủy")) {
-      return "Bạn có thể hủy vé trước 2 giờ trước suất chiếu. Vui lòng vào mục 'Vé của tôi' để quản lý đặt vé.";
-    } else if (
-      lowerMessage.includes("phim") ||
-      lowerMessage.includes("movie")
-    ) {
-      return "Hiện tại chúng tôi có nhiều phim đang chiếu và sắp chiếu. Bạn có thể xem danh sách phim tại trang chủ hoặc mục 'Phim' nhé!";
-    } else if (
-      lowerMessage.includes("rạp") ||
-      lowerMessage.includes("cinema")
-    ) {
-      return "Hệ thống rạp của chúng tôi có nhiều phòng chiếu với công nghệ hiện đại. Vui lòng chọn phim để xem các phòng chiếu có sẵn.";
-    } else if (
-      lowerMessage.includes("xin chào") ||
-      lowerMessage.includes("hello") ||
-      lowerMessage.includes("hi")
-    ) {
-      return "Xin chào! Rất vui được hỗ trợ bạn. Bạn cần tôi giúp đỡ điều gì về việc đặt vé xem phim?";
-    } else if (
-      lowerMessage.includes("cảm ơn") ||
-      lowerMessage.includes("thanks")
-    ) {
-      return "Rất vui được giúp đỡ bạn! Nếu có thắc mắc gì khác, đừng ngần ngại hỏi nhé! 😊";
-    } else {
-      return "Tôi có thể giúp bạn về: giá vé, cách đặt vé, thanh toán, hủy vé, thông tin phim và rạp chiếu. Bạn muốn biết thông tin gì?";
-    }
+  const handleSuggestionClick = (suggestion: string) => {
+    handleSendMessage(suggestion);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -110,6 +164,20 @@ export function Chatbot() {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const renderMessageContent = (message: Message) => {
+    if (message.role === "model") {
+      return (
+        <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-ul:my-2 prose-ul:pl-5 prose-li:my-1 prose-strong:font-semibold prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {message.content}
+          </ReactMarkdown>
+        </div>
+      );
+    }
+
+    return <p className="text-sm whitespace-pre-wrap">{message.content}</p>;
   };
 
   if (!isOpen) {
@@ -139,15 +207,25 @@ export function Chatbot() {
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-white">
             <AvatarFallback className="bg-white text-blue-600 font-bold">
-              AI
+              <Sparkles className="h-5 w-5" />
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-semibold">Trợ lý ảo</h3>
+            <h3 className="font-semibold">Trợ lý CineHub AI</h3>
             <p className="text-xs opacity-90">Luôn sẵn sàng hỗ trợ</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleReset}
+            disabled={resetMutation.isPending}
+            className="text-white hover:bg-white/20 h-8 w-8"
+            title="Reset cuộc trò chuyện"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -176,35 +254,49 @@ export function Chatbot() {
                 key={message.id}
                 className={cn(
                   "flex gap-3",
-                  message.sender === "user" ? "justify-end" : "justify-start",
+                  message.role === "user" ? "justify-end" : "justify-start",
                 )}
               >
-                {message.sender === "bot" && (
+                {message.role === "model" && (
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs">
-                      AI
+                      <Sparkles className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
                 )}
                 <div
                   className={cn(
-                    "max-w-[70%] rounded-lg p-3 shadow-sm",
-                    message.sender === "user"
+                    "max-w-[78%] rounded-lg p-3 shadow-sm",
+                    message.role === "user"
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                       : "bg-white text-gray-800 border",
                   )}
                 >
-                  <p className="text-sm whitespace-pre-wrap">
-                    {message.content}
-                  </p>
-                  <span className="text-xs opacity-70 mt-1 block">
-                    {message.timestamp.toLocaleTimeString("vi-VN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
+                  {message.id === "typing" ? (
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                      <span
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      ></span>
+                      <span
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></span>
+                    </div>
+                  ) : (
+                    <>
+                      {renderMessageContent(message)}
+                      <span className="text-xs opacity-70 mt-1 block">
+                        {message.timestamp.toLocaleTimeString("vi-VN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </>
+                  )}
                 </div>
-                {message.sender === "user" && (
+                {message.role === "user" && (
                   <Avatar className="h-8 w-8">
                     {user?.avatar && (
                       <AvatarImage
@@ -221,28 +313,28 @@ export function Chatbot() {
                 )}
               </div>
             ))}
-            {isTyping && (
-              <div className="flex gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs">
-                    AI
-                  </AvatarFallback>
-                </Avatar>
-                <div className="bg-white rounded-lg p-3 shadow-sm border">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                    <span
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    ></span>
-                    <span
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    ></span>
-                  </div>
+
+            {/* Suggestions */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 font-medium">
+                  Gợi ý câu hỏi:
+                </p>
+                <div className="grid gap-2">
+                  {suggestions.slice(0, 4).map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      disabled={chatMutation.isPending}
+                      className="text-left text-sm p-2 rounded-lg border border-gray-200 bg-white hover:bg-blue-50 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -255,10 +347,11 @@ export function Chatbot() {
                 onKeyPress={handleKeyPress}
                 placeholder="Nhập tin nhắn..."
                 className="flex-1"
+                disabled={chatMutation.isPending}
               />
               <Button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
+                onClick={() => handleSendMessage()}
+                disabled={!inputMessage.trim() || chatMutation.isPending}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
                 <Send className="h-4 w-4" />

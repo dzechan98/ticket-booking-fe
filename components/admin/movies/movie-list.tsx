@@ -78,6 +78,8 @@ export function MoviesList({
                     <TableHead>Tên phim</TableHead>
                     <TableHead>Thể loại</TableHead>
                     <TableHead>Thời lượng</TableHead>
+                    <TableHead>Quốc gia</TableHead>
+                    <TableHead>Năm SX</TableHead>
                     <TableHead>Ngày phát hành</TableHead>
                     <TableHead>Đánh giá</TableHead>
                     <TableHead className="text-right">Hành động</TableHead>
@@ -119,6 +121,14 @@ export function MoviesList({
                       </TableCell>
 
                       <TableCell className="text-muted-foreground">
+                        {movie.country || "Chưa có"}
+                      </TableCell>
+
+                      <TableCell className="text-muted-foreground">
+                        {movie.production_year || "Chưa có"}
+                      </TableCell>
+
+                      <TableCell className="text-muted-foreground">
                         {formatDate(movie.release_date)}
                       </TableCell>
 
@@ -126,7 +136,9 @@ export function MoviesList({
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                           <span className="font-medium">
-                            {movie.rating || 0}
+                            {movie.avgRating
+                              ? movie.avgRating.toFixed(1)
+                              : "N/A"}
                           </span>
                         </div>
                       </TableCell>

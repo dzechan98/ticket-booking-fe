@@ -65,11 +65,12 @@ export function MovieForm({
       title: "",
       description: "",
       duration_minutes: 90,
+      country: "",
+      production_year: undefined,
       release_date: "",
       poster_url: "",
       trailer_url: "",
       genreIds: [],
-      rating: 0,
     },
   });
 
@@ -176,23 +177,44 @@ export function MovieForm({
           )}
         </div>
 
-        {/* Rating */}
+        {/* Country */}
         <div className="space-y-2">
-          <Label htmlFor="rating" className="text-foreground">
-            Đánh giá (0-10)
+          <Label htmlFor="country" className="text-foreground">
+            Quốc gia
           </Label>
           <Input
-            id="rating"
-            type="number"
-            step="0.1"
-            min="0"
-            max="10"
-            placeholder="8.5"
+            id="country"
+            type="text"
+            placeholder="Ví dụ: Việt Nam"
             className="border-border text-foreground placeholder:text-muted-foreground"
-            {...register("rating", { valueAsNumber: true })}
+            {...register("country")}
           />
-          {errors.rating && (
-            <p className="text-sm text-destructive">{errors.rating.message}</p>
+          {errors.country && (
+            <p className="text-sm text-destructive">{errors.country.message}</p>
+          )}
+        </div>
+
+        {/* Production Year */}
+        <div className="space-y-2">
+          <Label htmlFor="production_year" className="text-foreground">
+            Năm sản xuất
+          </Label>
+          <Input
+            id="production_year"
+            type="number"
+            placeholder="2025"
+            className="border-border text-foreground placeholder:text-muted-foreground"
+            {...register("production_year", {
+              setValueAs: (value) =>
+                value === "" || value === null || value === undefined
+                  ? undefined
+                  : Number(value),
+            })}
+          />
+          {errors.production_year && (
+            <p className="text-sm text-destructive">
+              {errors.production_year.message}
+            </p>
           )}
         </div>
 

@@ -4,12 +4,13 @@ import type { MovieResponse } from "@/api/movies/type";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getEnumLabel } from "@/lib/utils/enum-labels";
 import { format, isToday, isTomorrow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Calendar, Clock, Film, MapPin, Star } from "lucide-react";
+import { Calendar, Clock, Film, Globe, MapPin, Star } from "lucide-react";
+import { screenTypeLabels } from "@/lib/utils/enum-labels";
 import Link from "next/link";
 import { useMemo } from "react";
+import { MovieRating } from "./movie-rating";
 
 interface MovieDetailsProps {
   movie: MovieResponse;
@@ -17,21 +18,49 @@ interface MovieDetailsProps {
 
 export function MovieDetails({ movie }: MovieDetailsProps) {
   // Filter and sort showtimes - only show from now onwards
-  const upcomingShowtimes = useMemo(() => {
-    if (!movie.showtimes) return [];
 
-    const now = new Date();
+  const trailerEmbedUrl = useMemo(() => {
+    if (!movie.trailer_url) return null;
 
-    return movie.showtimes
-      .filter((showtime) => {
-        const showtimeDate = new Date(showtime.start_time);
-        return showtimeDate.getTime() >= now.getTime(); // So sánh theo thời gian chính xác
-      })
-      .sort(
-        (a, b) =>
-          new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
-      );
-  }, [movie.showtimes]);
+    try {
+      const url = new URL(movie.trailer_url);
+
+      if (url.hostname.includes("youtu.be")) {
+        const videoId = url.pathname.replace("/", "");
+        return videoId
+          ? `https://www.youtube.com/embed/${videoId}${url.search}`
+          : null;
+      }
+
+      if (url.hostname.includes("youtube.com")) {
+        if (url.pathname === "/watch") {
+          const videoId = url.searchParams.get("v");
+          const params = new URLSearchParams(url.search);
+
+          params.delete("v");
+
+          return videoId
+            ? `https://www.youtube.com/embed/${videoId}${params.toString() ? `?${params.toString()}` : ""}`
+            : null;
+        }
+
+        if (url.pathname.startsWith("/embed/")) {
+          return url.toString();
+        }
+
+        if (url.pathname.startsWith("/shorts/")) {
+          const videoId = url.pathname.split("/")[2];
+          return videoId
+            ? `https://www.youtube.com/embed/${videoId}${url.search}`
+            : null;
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }, [movie.trailer_url]);
 
   const formatShowtimeDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -95,13 +124,13 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                 Chưa phân loại
               </Badge>
             )}
-            {movie.rating > 0 && (
+            {movie.avgRating > 0 && (
               <Badge
                 variant="secondary"
                 className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 px-3 py-1 flex items-center gap-1 text-xs font-bold shadow-md"
               >
                 <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
-                {movie.rating}/10
+                {movie.avgRating.toFixed(1)}/5
               </Badge>
             )}
           </div>
@@ -124,6 +153,26 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                 Thời lượng:
               </span>
               <span className="text-sm">{movie.duration_minutes} phút</span>
+            </div>
+            <div className="flex items-center gap-2.5 group">
+              <div className="p-1.5 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Globe className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-semibold text-foreground text-sm">
+                Quốc gia:
+              </span>
+              <span className="text-sm">{movie.country || "Chưa công bố"}</span>
+            </div>
+            <div className="flex items-center gap-2.5 group">
+              <div className="p-1.5 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Film className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-semibold text-foreground text-sm">
+                Năm sản xuất:
+              </span>
+              <span className="text-sm">
+                {movie.production_year || "Chưa công bố"}
+              </span>
             </div>
             {movie.genres && movie.genres.length > 0 && (
               <div className="flex items-center gap-2.5 group">
@@ -151,9 +200,9 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {upcomingShowtimes.length > 0 ? (
+          {movie.showtimes && movie.showtimes.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {upcomingShowtimes.map((showtime) => (
+              {movie.showtimes.map((showtime) => (
                 <Button
                   key={showtime.id}
                   asChild
@@ -177,7 +226,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                       variant="secondary"
                       className="text-[10px] mt-1 px-1.5 py-0"
                     >
-                      {showtime.room.screen_type}
+                      {screenTypeLabels[showtime.room.screen_type]}
                     </Badge>
                   </Link>
                 </Button>
@@ -200,6 +249,13 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Movie Rating Section */}
+      <MovieRating
+        movieId={movie.id}
+        avgRating={movie.avgRating}
+        ratings={movie.ratings}
+      />
 
       {/* Description */}
       {movie.description && (
@@ -229,28 +285,25 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           </CardHeader>
           <CardContent>
             <div className="aspect-video bg-secondary rounded-lg overflow-hidden shadow-md border border-border/50">
-              {movie.trailer_url.includes("youtube.com") ||
-              movie.trailer_url.includes("youtu.be") ? (
+              {trailerEmbedUrl ? (
                 <iframe
-                  src={movie.trailer_url
-                    .replace("watch?v=", "embed/")
-                    .replace("youtu.be/", "youtube.com/embed/")}
+                  src={trailerEmbedUrl}
+                  title={`${movie.title} trailer`}
                   className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <a
-                      href={movie.trailer_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Xem trailer tại đây
-                    </a>
-                  </div>
+                <div className="flex h-full items-center justify-center p-4 text-center">
+                  <a
+                    href={movie.trailer_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Mở trailer
+                  </a>
                 </div>
               )}
             </div>
